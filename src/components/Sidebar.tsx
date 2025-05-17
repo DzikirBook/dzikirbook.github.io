@@ -2,17 +2,18 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Music, ListMusic, Disc } from "lucide-react";
+import { PlayerView } from "@/lib/types";
 
 interface SidebarProps {
-  activeView: string;
-  onChangeView: (view: string) => void;
+  activeView: PlayerView;
+  onChangeView: (view: PlayerView) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView }) => {
   const navItems = [
-    { id: "nowPlaying", name: "Now Playing", icon: <Music className="w-5 h-5" /> },
-    { id: "playlist", name: "Playlists", icon: <ListMusic className="w-5 h-5" /> },
-    { id: "browse", name: "Browse", icon: <Disc className="w-5 h-5" /> },
+    { id: "nowPlaying" as PlayerView, name: "Now Playing", icon: <Music className="w-5 h-5" /> },
+    { id: "playlist" as PlayerView, name: "Playlists", icon: <ListMusic className="w-5 h-5" /> },
+    { id: "browse" as PlayerView, name: "Browse", icon: <Disc className="w-5 h-5" /> },
   ];
 
   return (

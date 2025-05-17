@@ -2,6 +2,7 @@
 import React from 'react';
 import { PlayerState } from '@/lib/types';
 import AudioControls from './AudioControls';
+import { Music } from 'lucide-react';
 
 interface NowPlayingProps {
   playerState: PlayerState;
