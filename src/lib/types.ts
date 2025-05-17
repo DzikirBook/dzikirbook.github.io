@@ -33,8 +33,8 @@ export interface SupabaseTrack {
   title: string;
   artist: string;
   album: string;
-  albumArt: string | null;
-  audioUrl: string;
+  albumart: string | null;  // Lowercase to match Supabase column
+  audiourl: string;         // Lowercase to match Supabase column
   duration: number;
   created_at: string;
 }
@@ -42,7 +42,7 @@ export interface SupabaseTrack {
 export interface SupabasePlaylist {
   id: string;
   name: string;
-  coverArt: string | null;
+  coverart: string | null;  // Lowercase to match Supabase column
   created_at: string;
 }
 

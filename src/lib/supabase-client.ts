@@ -5,7 +5,7 @@ import { SupabaseTrack, SupabasePlaylist, Track, Playlist } from "./types";
 // Fetch all dzikir audio tracks
 export const fetchDzikirTracks = async (): Promise<Track[]> => {
   const { data, error } = await supabase
-    .from("dzikirAudio")
+    .from("dzikiraudio")
     .select("*")
     .order("created_at", { ascending: true });
 
@@ -15,14 +15,14 @@ export const fetchDzikirTracks = async (): Promise<Track[]> => {
   }
 
   // Convert Supabase data to our Track interface
-  return (data as SupabaseTrack[]).map((track) => ({
+  return (data || []).map((track: any) => ({
     id: track.id,
     title: track.title,
     artist: track.artist,
     album: track.album,
-    albumArt: track.albumArt,
+    albumArt: track.albumart,
     duration: track.duration,
-    audioUrl: track.audioUrl,
+    audioUrl: track.audiourl,
   }));
 };
 
@@ -54,7 +54,7 @@ export const fetchPlaylists = async (): Promise<Playlist[]> => {
   }
 
   // Map tracks to playlists
-  return (playlistData as SupabasePlaylist[]).map((playlist) => {
+  return (playlistData || []).map((playlist: any) => {
     // Find all items for this playlist
     const items = playlistItems.filter(item => item.playlist_id === playlist.id);
     
@@ -66,7 +66,7 @@ export const fetchPlaylists = async (): Promise<Playlist[]> => {
     return {
       id: playlist.id,
       name: playlist.name,
-      coverArt: playlist.coverArt,
+      coverArt: playlist.coverart,
       tracks: playlistTracks,
     };
   });
@@ -75,7 +75,7 @@ export const fetchPlaylists = async (): Promise<Playlist[]> => {
 // Get a specific track by ID (for QR code functionality)
 export const fetchTrackById = async (id: string): Promise<Track | null> => {
   const { data, error } = await supabase
-    .from("dzikirAudio")
+    .from("dzikiraudio")
     .select("*")
     .eq("id", id)
     .maybeSingle();
@@ -90,8 +90,8 @@ export const fetchTrackById = async (id: string): Promise<Track | null> => {
     title: data.title,
     artist: data.artist,
     album: data.album,
-    albumArt: data.albumArt,
+    albumArt: data.albumart,
     duration: data.duration,
-    audioUrl: data.audioUrl,
+    audioUrl: data.audiourl,
   };
 };
