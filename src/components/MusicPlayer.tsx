@@ -1,24 +1,65 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlayerState, PlayerView, Track, Playlist } from '@/lib/types';
-import { mockTracks, mockPlaylists } from '@/lib/data';
 import Sidebar from './Sidebar';
 import NowPlaying from './NowPlaying';
 import PlaylistView from './Playlist';
 import { cn } from '@/lib/utils';
-import { Music } from 'lucide-react';
+import { Music, BookOpen } from 'lucide-react';
+import { fetchDzikirTracks, fetchPlaylists } from '@/lib/supabase-client';
+import { useToast } from '@/hooks/use-toast';
 
 const MusicPlayer: React.FC = () => {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
   const [activeView, setActiveView] = useState<PlayerView>('nowPlaying');
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [playerState, setPlayerState] = useState<PlayerState>({
-    currentTrack: mockTracks[0],
-    currentPlaylist: mockPlaylists[0],
+    currentTrack: null,
+    currentPlaylist: null,
     isPlaying: false,
     progress: 0,
     volume: 0.8,
     isShuffle: false,
     isRepeat: false,
   });
+
+  // Fetch data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch tracks and playlists from Supabase
+        const dzikirTracks = await fetchDzikirTracks();
+        const dzikirPlaylists = await fetchPlaylists();
+        
+        setTracks(dzikirTracks);
+        setPlaylists(dzikirPlaylists);
+        
+        // Set initial track and playlist if available
+        if (dzikirTracks.length > 0) {
+          const firstPlaylist = dzikirPlaylists.length > 0 ? dzikirPlaylists[0] : null;
+          setPlayerState(prev => ({ 
+            ...prev, 
+            currentTrack: dzikirTracks[0],
+            currentPlaylist: firstPlaylist
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        toast({
+          title: "Error loading data",
+          description: "Could not load dzikir audio. Please try again later.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [toast]);
 
   // Player controls
   const handlePlayPause = () => {
@@ -94,6 +135,22 @@ const MusicPlayer: React.FC = () => {
     }));
   };
 
+  // Render loading state
+  if (isLoading) {
+    return (
+      <div className="player-container flex flex-col md:flex-row w-full h-full max-h-full overflow-hidden bg-white">
+        <div className="h-full flex flex-col items-center justify-center p-6">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-48 w-48 bg-player-blue/20 rounded-xl mb-6"></div>
+            <div className="h-6 w-48 bg-player-blue/20 rounded mb-3"></div>
+            <div className="h-4 w-36 bg-player-blue/20 rounded"></div>
+          </div>
+          <p className="mt-8 text-player-text">Loading dzikir audio...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Render the appropriate view based on activeView state
   const renderView = () => {
     switch (activeView) {
@@ -114,6 +171,7 @@ const MusicPlayer: React.FC = () => {
         return (
           <PlaylistView
             playerState={playerState}
+            playlists={playlists}
             onPlayPause={handlePlayPause}
             onNext={handleNext}
             onPrevious={handlePrevious}
@@ -130,7 +188,7 @@ const MusicPlayer: React.FC = () => {
             <Music className="w-16 h-16 text-player-gray mb-4" />
             <h2 className="text-xl font-semibold mb-2">Coming Soon</h2>
             <p className="text-player-text text-center">
-              Browse feature will be available after Supabase integration
+              Browse feature will be available in the next update
             </p>
           </div>
         );
@@ -146,7 +204,17 @@ const MusicPlayer: React.FC = () => {
     )}>
       <Sidebar activeView={activeView} onChangeView={setActiveView} />
       <main className="flex-1 overflow-y-auto">
-        {renderView()}
+        {tracks.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center p-6">
+            <BookOpen className="w-16 h-16 text-player-gray mb-4" />
+            <h2 className="text-xl font-semibold mb-2">No Dzikir Found</h2>
+            <p className="text-player-text text-center">
+              Please add dzikir audio to your Supabase database
+            </p>
+          </div>
+        ) : (
+          renderView()
+        )}
       </main>
     </div>
   );

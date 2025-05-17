@@ -9,7 +9,99 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      dzikiraudio: {
+        Row: {
+          album: string
+          albumart: string | null
+          artist: string
+          audiourl: string
+          created_at: string
+          duration: number
+          id: string
+          title: string
+        }
+        Insert: {
+          album: string
+          albumart?: string | null
+          artist: string
+          audiourl: string
+          created_at?: string
+          duration?: number
+          id?: string
+          title: string
+        }
+        Update: {
+          album?: string
+          albumart?: string | null
+          artist?: string
+          audiourl?: string
+          created_at?: string
+          duration?: number
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      playlist_items: {
+        Row: {
+          created_at: string
+          dzikir_id: string
+          id: string
+          playlist_id: string
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          dzikir_id: string
+          id?: string
+          playlist_id: string
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          dzikir_id?: string
+          id?: string
+          playlist_id?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playlist_items_dzikir_id_fkey"
+            columns: ["dzikir_id"]
+            isOneToOne: false
+            referencedRelation: "dzikiraudio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playlist_items_playlist_id_fkey"
+            columns: ["playlist_id"]
+            isOneToOne: false
+            referencedRelation: "playlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      playlists: {
+        Row: {
+          coverart: string | null
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          coverart?: string | null
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          coverart?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

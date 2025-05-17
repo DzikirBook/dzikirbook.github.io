@@ -1,0 +1,97 @@
+
+import { supabase } from "@/integrations/supabase/client";
+import { SupabaseTrack, SupabasePlaylist, Track, Playlist } from "./types";
+
+// Fetch all dzikir audio tracks
+export const fetchDzikirTracks = async (): Promise<Track[]> => {
+  const { data, error } = await supabase
+    .from("dzikirAudio")
+    .select("*")
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching dzikir tracks:", error);
+    return [];
+  }
+
+  // Convert Supabase data to our Track interface
+  return (data as SupabaseTrack[]).map((track) => ({
+    id: track.id,
+    title: track.title,
+    artist: track.artist,
+    album: track.album,
+    albumArt: track.albumArt,
+    duration: track.duration,
+    audioUrl: track.audioUrl,
+  }));
+};
+
+// Fetch all playlists
+export const fetchPlaylists = async (): Promise<Playlist[]> => {
+  // First get all playlists
+  const { data: playlistData, error: playlistError } = await supabase
+    .from("playlists")
+    .select("*")
+    .order("created_at", { ascending: true });
+
+  if (playlistError) {
+    console.error("Error fetching playlists:", playlistError);
+    return [];
+  }
+
+  // Get all tracks
+  const tracks = await fetchDzikirTracks();
+
+  // Get all playlist items to map tracks to playlists
+  const { data: playlistItems, error: itemsError } = await supabase
+    .from("playlist_items")
+    .select("*")
+    .order("position", { ascending: true });
+
+  if (itemsError) {
+    console.error("Error fetching playlist items:", itemsError);
+    return [];
+  }
+
+  // Map tracks to playlists
+  return (playlistData as SupabasePlaylist[]).map((playlist) => {
+    // Find all items for this playlist
+    const items = playlistItems.filter(item => item.playlist_id === playlist.id);
+    
+    // Get the tracks for these items
+    const playlistTracks = items.map(item => {
+      return tracks.find(track => track.id === item.dzikir_id);
+    }).filter(track => track !== undefined) as Track[];
+
+    return {
+      id: playlist.id,
+      name: playlist.name,
+      coverArt: playlist.coverArt,
+      tracks: playlistTracks,
+    };
+  });
+};
+
+// Get a specific track by ID (for QR code functionality)
+export const fetchTrackById = async (id: string): Promise<Track | null> => {
+  const { data, error } = await supabase
+    .from("dzikirAudio")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error || !data) {
+    console.error("Error fetching track by id:", error);
+    return null;
+  }
+
+  return {
+    id: data.id,
+    title: data.title,
+    artist: data.artist,
+    album: data.album,
+    albumArt: data.albumArt,
+    duration: data.duration,
+    audioUrl: data.audioUrl,
+  };
+};

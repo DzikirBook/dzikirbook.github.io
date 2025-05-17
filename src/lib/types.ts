@@ -4,7 +4,7 @@ export interface Track {
   title: string;
   artist: string;
   album: string;
-  albumArt: string;
+  albumArt: string | null;
   duration: number;
   audioUrl?: string;
 }
@@ -13,7 +13,7 @@ export interface Playlist {
   id: string;
   name: string;
   tracks: Track[];
-  coverArt?: string;
+  coverArt?: string | null;
 }
 
 export type PlayerState = {
@@ -27,3 +27,29 @@ export type PlayerState = {
 };
 
 export type PlayerView = 'nowPlaying' | 'playlist' | 'browse';
+
+export interface SupabaseTrack {
+  id: string;
+  title: string;
+  artist: string;
+  album: string;
+  albumArt: string | null;
+  audioUrl: string;
+  duration: number;
+  created_at: string;
+}
+
+export interface SupabasePlaylist {
+  id: string;
+  name: string;
+  coverArt: string | null;
+  created_at: string;
+}
+
+export interface SupabasePlaylistItem {
+  id: string;
+  playlist_id: string;
+  dzikir_id: string;
+  position: number;
+  created_at: string;
+}
