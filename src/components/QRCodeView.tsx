@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Track } from '@/lib/types';
 // Fix the import to use named export instead of default export
 import { QRCodeSVG } from 'qrcode.react';
@@ -13,24 +13,46 @@ interface QRCodeViewProps {
 
 const QRCodeView: React.FC<QRCodeViewProps> = ({ tracks, baseUrl }) => {
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+  const qrRef = useRef<SVGSVGElement>(null);
 
   const generateQrUrl = (track: Track) => {
     return `${baseUrl}/track/${track.id}`;
   };
 
   const downloadQRCode = () => {
-    if (!selectedTrack) return;
-
-    const canvas = document.getElementById('qrcode-canvas') as HTMLCanvasElement;
-    if (!canvas) return;
-
-    const url = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `qrcode-${selectedTrack.title.replace(/\s+/g, '-')}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (!selectedTrack || !qrRef.current) return;
+    
+    // Create a canvas element
+    const canvas = document.createElement('canvas');
+    const svg = qrRef.current;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const img = new Image();
+    
+    // Convert SVG to base64 string
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    
+    img.onload = () => {
+      // Set canvas dimensions to match the SVG
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      // Draw the image on the canvas
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      
+      // Download the canvas as PNG
+      const downloadLink = document.createElement('a');
+      downloadLink.href = canvas.toDataURL('image/png');
+      downloadLink.download = `qrcode-${selectedTrack.title.replace(/\s+/g, '-')}.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    };
+    
+    img.src = url;
   };
 
   return (
@@ -64,9 +86,8 @@ const QRCodeView: React.FC<QRCodeViewProps> = ({ tracks, baseUrl }) => {
           </div>
           
           <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
-            {/* Replace QRCode with QRCodeSVG and add id for download functionality */}
             <QRCodeSVG
-              id="qrcode-canvas"
+              ref={qrRef}
               value={generateQrUrl(selectedTrack)}
               size={200}
               bgColor="#ffffff"
