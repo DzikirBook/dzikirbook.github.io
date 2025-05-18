@@ -1,6 +1,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Track } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
 interface UseAudioReturn {
   audioRef: React.RefObject<HTMLAudioElement>;
@@ -9,6 +10,8 @@ interface UseAudioReturn {
   duration: number;
   volume: number;
   isLoading: boolean;
+  hasError: boolean;
+  errorMessage: string | null;
   play: () => void;
   pause: () => void;
   toggle: () => void;
@@ -27,26 +30,63 @@ export function useAudio(
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.8);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Update audio source when track changes
   useEffect(() => {
     const audio = audioRef.current;
     
     if (track?.audioUrl) {
+      // Reset error state when trying a new track
+      setHasError(false);
+      setErrorMessage(null);
       setIsLoading(true);
+
+      // Make sure we're paused before loading a new source
+      audio.pause();
+      
+      // Try to load the audio file
       audio.src = track.audioUrl;
+      audio.preload = "auto"; // Preload audio data
+      audio.crossOrigin = "anonymous"; // Important for CORS
       audio.load();
       
       const loadHandler = () => {
         setIsLoading(false);
         setDuration(audio.duration);
-        if (isPlaying) audio.play();
+        if (isPlaying) {
+          const playPromise = audio.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((error) => {
+              console.error("Audio playback error:", error);
+              setIsPlaying(false);
+              setHasError(true);
+              setErrorMessage("Browser requires user interaction to play audio");
+              
+              toast({
+                title: "Playback Error",
+                description: "Browser security requires you to click play first",
+                variant: "destructive",
+              });
+            });
+          }
+        }
       };
       
       const errorHandler = (error: ErrorEvent) => {
         console.error("Error loading audio:", error);
         setIsLoading(false);
         setIsPlaying(false);
+        setHasError(true);
+        setErrorMessage("Could not load audio file. Please try again later.");
+        
+        toast({
+          title: "Audio Error",
+          description: "Could not load audio file. Please try again later.",
+          variant: "destructive",
+        });
       };
       
       audio.addEventListener('loadeddata', loadHandler);
@@ -62,7 +102,7 @@ export function useAudio(
       setIsPlaying(false);
       setProgress(0);
     }
-  }, [track, isPlaying]);
+  }, [track, isPlaying, toast]);
 
   // Update volume
   useEffect(() => {
@@ -80,12 +120,20 @@ export function useAudio(
         playPromise.catch((error) => {
           console.error("Audio playback error:", error);
           setIsPlaying(false);
+          setHasError(true);
+          setErrorMessage("Browser requires user interaction to play audio");
+          
+          toast({
+            title: "Playback Error",
+            description: "Browser security requires you to click play first",
+            variant: "destructive",
+          });
         });
       }
     } else {
       audio.pause();
     }
-  }, [isPlaying]);
+  }, [isPlaying, toast]);
 
   // Track progress
   useEffect(() => {
@@ -123,7 +171,13 @@ export function useAudio(
   }, []);
 
   // Control functions
-  const play = () => setIsPlaying(true);
+  const play = () => {
+    // Reset error state when attempting to play
+    setHasError(false);
+    setErrorMessage(null);
+    setIsPlaying(true);
+  };
+  
   const pause = () => setIsPlaying(false);
   const toggle = () => setIsPlaying(!isPlaying);
   
@@ -146,6 +200,8 @@ export function useAudio(
     duration,
     volume,
     isLoading,
+    hasError,
+    errorMessage,
     play,
     pause,
     toggle,

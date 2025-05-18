@@ -5,7 +5,7 @@ import { fetchTrackById } from "@/lib/supabase-client";
 import { Playlist, Track } from "@/lib/types";
 import { useAudio } from "@/hooks/use-audio";
 import AudioControls from "@/components/AudioControls";
-import { BookOpen } from "lucide-react";
+import { BookOpen, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
@@ -43,7 +43,9 @@ const TrackPage = () => {
     isPlaying, 
     progress, 
     duration,
-    volume, 
+    volume,
+    hasError,
+    errorMessage,
     play, 
     pause, 
     toggle,
@@ -101,6 +103,12 @@ const TrackPage = () => {
     play();
   };
 
+  // Function to retry playing when there is an error
+  const handleRetry = () => {
+    setAutoplayAttempted(true);
+    play();
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-player-blue/30 via-white to-player-peach/30 flex items-center justify-center p-4">
@@ -151,7 +159,25 @@ const TrackPage = () => {
           )}
         </div>
         
-        {!autoplayAttempted && (
+        {/* Error message display */}
+        {hasError && (
+          <div className="text-center mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center justify-center mb-2">
+              <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
+              <p className="font-medium text-red-700">Audio Error</p>
+            </div>
+            <p className="text-sm text-red-600 mb-3">{errorMessage || "There was a problem playing this audio"}</p>
+            <Button 
+              onClick={handleRetry}
+              variant="destructive"
+              className="px-6"
+            >
+              Retry
+            </Button>
+          </div>
+        )}
+        
+        {!autoplayAttempted && !hasError && (
           <div className="text-center mb-6">
             <Button 
               onClick={handleManualPlay}
@@ -166,7 +192,7 @@ const TrackPage = () => {
           </div>
         )}
         
-        {autoplayAttempted && (
+        {(autoplayAttempted || hasError) && (
           <div className="w-full">
             <AudioControls
               playerState={{
