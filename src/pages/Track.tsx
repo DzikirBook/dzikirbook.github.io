@@ -7,6 +7,7 @@ import { useAudio } from "@/hooks/use-audio";
 import AudioControls from "@/components/AudioControls";
 import { BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 const TrackPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,6 +15,7 @@ const TrackPage = () => {
   const { toast } = useToast();
   const [track, setTrack] = useState<Track | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [autoplayAttempted, setAutoplayAttempted] = useState(false);
 
   // Create a dummy playlist with just this track
   const playlist: Playlist | null = track
@@ -60,10 +62,8 @@ const TrackPage = () => {
         
         if (trackData) {
           setTrack(trackData);
-          // Auto-play when track is loaded
-          setTimeout(() => {
-            play();
-          }, 1000);
+          // Don't autoplay - we'll wait for user interaction
+          setAutoplayAttempted(false);
         } else {
           toast({
             title: "Track Not Found",
@@ -85,7 +85,7 @@ const TrackPage = () => {
     };
 
     loadTrack();
-  }, [id, navigate, toast, play]);
+  }, [id, navigate, toast]);
 
   // Handle player controls
   const handlePlayPause = () => toggle();
@@ -94,6 +94,12 @@ const TrackPage = () => {
   
   // Dummy functions for controls that aren't needed in single track mode
   const noop = () => {};
+
+  // Manual play function that will be triggered by a button click
+  const handleManualPlay = () => {
+    setAutoplayAttempted(true);
+    play();
+  };
 
   if (isLoading) {
     return (
@@ -145,23 +151,40 @@ const TrackPage = () => {
           )}
         </div>
         
-        <div className="w-full">
-          <AudioControls
-            playerState={{
-              ...playerState,
-              isPlaying,
-              progress,
-              volume
-            }}
-            onPlayPause={handlePlayPause}
-            onNext={noop}
-            onPrevious={noop}
-            onSeek={handleSeek}
-            onVolumeChange={handleVolumeChange}
-            onToggleShuffle={noop}
-            onToggleRepeat={noop}
-          />
-        </div>
+        {!autoplayAttempted && (
+          <div className="text-center mb-6">
+            <Button 
+              onClick={handleManualPlay}
+              className="bg-player-primary hover:bg-player-primary/90 text-white px-8 py-4"
+              size="lg"
+            >
+              Play Audio
+            </Button>
+            <p className="text-sm text-gray-500 mt-2">
+              Browser security requires user interaction before playing audio
+            </p>
+          </div>
+        )}
+        
+        {autoplayAttempted && (
+          <div className="w-full">
+            <AudioControls
+              playerState={{
+                ...playerState,
+                isPlaying,
+                progress,
+                volume
+              }}
+              onPlayPause={handlePlayPause}
+              onNext={noop}
+              onPrevious={noop}
+              onSeek={handleSeek}
+              onVolumeChange={handleVolumeChange}
+              onToggleShuffle={noop}
+              onToggleRepeat={noop}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
