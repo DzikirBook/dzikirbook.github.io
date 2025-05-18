@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { Track } from '@/lib/types';
-import QRCode from 'qrcode.react';
+// Fix the import to use named export instead of default export
+import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 
@@ -63,7 +64,8 @@ const QRCodeView: React.FC<QRCodeViewProps> = ({ tracks, baseUrl }) => {
           </div>
           
           <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
-            <QRCode
+            {/* Replace QRCode with QRCodeSVG and add id for download functionality */}
+            <QRCodeSVG
               id="qrcode-canvas"
               value={generateQrUrl(selectedTrack)}
               size={200}
