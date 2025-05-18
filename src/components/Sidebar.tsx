@@ -1,8 +1,9 @@
 
-import React from "react";
-import { cn } from "@/lib/utils";
-import { Music, ListMusic, Disc, BookOpen } from "lucide-react";
-import { PlayerView } from "@/lib/types";
+import React from 'react';
+import { PlayerView } from '@/lib/types';
+import { Home, PlayCircle, List, QrCode } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   activeView: PlayerView;
@@ -10,38 +11,54 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView }) => {
+  const navigate = useNavigate();
+  
   const navItems = [
-    { id: "nowPlaying" as PlayerView, name: "Now Playing", icon: <Music className="w-5 h-5" /> },
-    { id: "playlist" as PlayerView, name: "Collections", icon: <ListMusic className="w-5 h-5" /> },
-    { id: "browse" as PlayerView, name: "Browse", icon: <BookOpen className="w-5 h-5" /> },
+    { 
+      icon: Home, 
+      label: 'Home', 
+      active: activeView === 'nowPlaying',
+      onClick: () => onChangeView('nowPlaying') 
+    },
+    { 
+      icon: List, 
+      label: 'Playlists',
+      active: activeView === 'playlist', 
+      onClick: () => onChangeView('playlist') 
+    },
+    { 
+      icon: QrCode, 
+      label: 'QR Codes',
+      active: false,
+      onClick: () => navigate('/qrcodes')
+    }
   ];
 
   return (
-    <div className="flex flex-col w-full md:w-64 h-24 md:h-full bg-white rounded-t-3xl md:rounded-tr-none md:rounded-l-3xl border-t md:border-t-0 md:border-r border-gray-100 overflow-hidden">
-      <div className="p-4 md:p-6 flex flex-row md:flex-col gap-2 md:gap-6 items-center md:items-start">
-        <div className="hidden md:flex flex-col space-y-1 mb-6">
-          <h2 className="text-xl font-bold text-player-primary">Dzikir</h2>
-          <p className="text-xs text-player-text">Pagi Petang For Kids</p>
-        </div>
-        
-        <nav className="flex flex-row md:flex-col gap-1 md:gap-2 w-full">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => onChangeView(item.id)}
-              className={cn(
-                "flex items-center gap-3 px-4 py-2 rounded-lg transition-colors",
-                activeView === item.id 
-                  ? "bg-player-light text-player-primary" 
-                  : "text-player-text hover:bg-gray-50"
-              )}
-            >
-              {item.icon}
-              <span className="hidden md:inline text-sm font-medium">{item.name}</span>
-            </button>
-          ))}
-        </nav>
+    <div className="bg-white w-24 md:w-64 border-r border-gray-200 flex flex-col">
+      <div className="p-4 border-b border-gray-200 flex items-center justify-center md:justify-start">
+        <PlayCircle className="h-8 w-8 text-player-blue" />
+        <h1 className="text-xl font-medium ml-3 hidden md:block">Audio Player</h1>
       </div>
+      <nav className="flex-1">
+        <ul className="py-4 space-y-1">
+          {navItems.map((item, index) => (
+            <li key={index}>
+              <button 
+                onClick={item.onClick}
+                className={cn(
+                  "w-full flex items-center px-4 py-3 text-left",
+                  "md:hover:bg-gray-100 transition-colors",
+                  item.active ? "text-player-blue bg-gray-50" : "text-gray-500"
+                )}
+              >
+                <item.icon className="h-5 w-5 mx-auto md:mx-0" />
+                <span className="ml-3 hidden md:block">{item.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </div>
   );
 };

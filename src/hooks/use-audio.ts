@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import { Track } from '@/lib/types';
 
@@ -152,4 +153,4 @@ export function useAudio(
     setVolume: handleSetVolume,
     onEnded: onEnded || (() => {}),
   };
-} 
+}
