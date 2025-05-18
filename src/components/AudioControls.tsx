@@ -1,7 +1,6 @@
-
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { SkipBack, SkipForward, Play, Pause, Volume2, Shuffle, Repeat } from 'lucide-react';
+import { SkipBack, SkipForward, Play, Pause, Volume2, Shuffle, Repeat, Loader2 } from 'lucide-react';
 import { PlayerState } from '@/lib/types';
 
 interface AudioControlsProps {
@@ -28,6 +27,16 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   minimal = false,
 }) => {
   const { isPlaying, progress, volume, isShuffle, isRepeat, currentTrack } = playerState;
+  const progressRef = useRef<HTMLInputElement>(null);
+  
+  // Update progress bar background
+  useEffect(() => {
+    if (progressRef.current) {
+      const percent = progress * 100;
+      progressRef.current.style.backgroundImage = 
+        `linear-gradient(to right, var(--player-primary) 0%, var(--player-primary) ${percent}%, #e5e7eb ${percent}%, #e5e7eb 100%)`;
+    }
+  }, [progress]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -35,16 +44,37 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  // Calculate current and total time
+  const currentTime = currentTrack ? formatTime(progress * currentTrack.duration) : '0:00';
+  const totalTime = currentTrack ? formatTime(currentTrack.duration) : '0:00';
+
+  const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newProgress = parseFloat(e.target.value);
+    onSeek(newProgress);
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    onVolumeChange(newVolume);
+  };
+
   return (
     <div className="w-full">
       {!minimal && currentTrack && (
         <div className="mb-3 px-1">
-          <div className="track-progress">
-            <div className="track-progress-bar" style={{ width: `${progress * 100}%` }}></div>
-          </div>
+          <input
+            ref={progressRef}
+            type="range"
+            min="0"
+            max="1"
+            step="0.001"
+            value={progress}
+            onChange={handleProgressChange}
+            className="w-full cursor-pointer"
+          />
           <div className="flex justify-between text-xs text-player-text mt-1">
-            <span>{formatTime(progress * (currentTrack?.duration || 0))}</span>
-            <span>{formatTime(currentTrack?.duration || 0)}</span>
+            <span>{currentTime}</span>
+            <span>{totalTime}</span>
           </div>
         </div>
       )}
@@ -58,11 +88,18 @@ const AudioControls: React.FC<AudioControlsProps> = ({
                 "control-button",
                 isShuffle ? "text-player-primary" : "text-player-text"
               )}
+              aria-label="Toggle shuffle"
+              title="Toggle shuffle"
             >
               <Shuffle size={18} />
             </button>
             
-            <button onClick={onPrevious} className="control-button">
+            <button 
+              onClick={onPrevious} 
+              className="control-button"
+              aria-label="Previous track"
+              title="Previous track"
+            >
               <SkipBack size={20} />
             </button>
           </>
@@ -72,15 +109,27 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           onClick={onPlayPause} 
           className={cn(
             "play-button",
-            minimal ? "p-2" : "p-3"
+            minimal ? "w-8 h-8" : "w-12 h-12",
+            isPlaying ? "bg-player-primary" : "bg-player-primary" 
           )}
+          aria-label={isPlaying ? "Pause" : "Play"}
+          title={isPlaying ? "Pause" : "Play"}
         >
-          {isPlaying ? <Pause size={minimal ? 16 : 20} /> : <Play size={minimal ? 16 : 20} />}
+          {playerState.currentTrack?.audioUrl ? (
+            isPlaying ? <Pause size={minimal ? 16 : 20} /> : <Play size={minimal ? 16 : 20} className="ml-0.5" />
+          ) : (
+            <Loader2 size={minimal ? 16 : 20} className="audio-loading" />
+          )}
         </button>
 
         {!minimal && (
           <>
-            <button onClick={onNext} className="control-button">
+            <button 
+              onClick={onNext} 
+              className="control-button"
+              aria-label="Next track"
+              title="Next track"
+            >
               <SkipForward size={20} />
             </button>
             
@@ -90,6 +139,8 @@ const AudioControls: React.FC<AudioControlsProps> = ({
                 "control-button",
                 isRepeat ? "text-player-primary" : "text-player-text"
               )}
+              aria-label="Toggle repeat"
+              title="Toggle repeat"
             >
               <Repeat size={18} />
             </button>
@@ -105,8 +156,10 @@ const AudioControls: React.FC<AudioControlsProps> = ({
               max="1"
               step="0.01"
               value={volume}
-              onChange={(e) => onVolumeChange(Number(e.target.value))}
-              className="w-16 md:w-24 accent-player-primary"
+              onChange={handleVolumeChange}
+              className="w-16 md:w-24"
+              aria-label="Volume"
+              title={`Volume: ${Math.round(volume * 100)}%`}
             />
           </div>
         )}

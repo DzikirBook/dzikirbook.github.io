@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -65,15 +64,14 @@ export default {
 				},
 				// Custom music player colors
 				player: {
-					primary: '#9b87f5',
-					secondary: '#7E69AB',
-					light: '#E5DEFF',
-					peach: '#FDE1D3',
-					yellow: '#FEF7CD',
-					orange: '#FEC6A1',
-					blue: '#D3E4FD',
-					gray: '#F1F0FB',
-					text: '#8E9196',
+					primary: 'var(--player-primary)',
+					secondary: 'var(--player-secondary)',
+					light: 'var(--player-light)',
+					dark: 'var(--player-dark)',
+					text: 'var(--player-text)',
+					gray: 'var(--player-gray)',
+					blue: 'var(--player-blue)',
+					peach: 'var(--player-peach)',
 				}
 			},
 			borderRadius: {

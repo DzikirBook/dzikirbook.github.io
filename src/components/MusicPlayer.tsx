@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Music, BookOpen } from 'lucide-react';
 import { fetchDzikirTracks, fetchPlaylists } from '@/lib/supabase-client';
 import { useToast } from '@/hooks/use-toast';
+import { useAudio } from '@/hooks/use-audio';
 
 const MusicPlayer: React.FC = () => {
   const { toast } = useToast();
@@ -23,6 +24,27 @@ const MusicPlayer: React.FC = () => {
     isShuffle: false,
     isRepeat: false,
   });
+
+  // Use the audio hook to handle actual audio playback
+  const { 
+    isPlaying, 
+    progress, 
+    volume,
+    play,
+    pause,
+    seek,
+    setVolume
+  } = useAudio(playerState.currentTrack, handleTrackEnded);
+
+  // Update player state when audio state changes
+  useEffect(() => {
+    setPlayerState(prev => ({
+      ...prev,
+      isPlaying,
+      progress,
+      volume
+    }));
+  }, [isPlaying, progress, volume]);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -61,9 +83,25 @@ const MusicPlayer: React.FC = () => {
     loadData();
   }, [toast]);
 
+  // Handle track ended (auto-play next track)
+  function handleTrackEnded() {
+    if (playerState.isRepeat) {
+      // If repeat is on, restart the same track
+      seek(0);
+      play();
+    } else {
+      // Otherwise, go to next track
+      handleNext();
+    }
+  }
+
   // Player controls
   const handlePlayPause = () => {
-    setPlayerState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
+    if (isPlaying) {
+      pause();
+    } else {
+      play();
+    }
   };
 
   const handleNext = () => {
@@ -81,7 +119,6 @@ const MusicPlayer: React.FC = () => {
     setPlayerState(prev => ({ 
       ...prev, 
       currentTrack: nextTrack,
-      isPlaying: true,
       progress: 0 
     }));
   };
@@ -104,17 +141,16 @@ const MusicPlayer: React.FC = () => {
     setPlayerState(prev => ({ 
       ...prev, 
       currentTrack: prevTrack,
-      isPlaying: true,
       progress: 0 
     }));
   };
 
   const handleSeek = (position: number) => {
-    setPlayerState(prev => ({ ...prev, progress: position }));
+    seek(position);
   };
 
-  const handleVolumeChange = (volume: number) => {
-    setPlayerState(prev => ({ ...prev, volume }));
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
   };
 
   const handleToggleShuffle = () => {
@@ -130,9 +166,9 @@ const MusicPlayer: React.FC = () => {
       ...prev, 
       currentTrack: track,
       currentPlaylist: playlist,
-      isPlaying: true,
       progress: 0 
     }));
+    play();
   };
 
   // Render loading state
