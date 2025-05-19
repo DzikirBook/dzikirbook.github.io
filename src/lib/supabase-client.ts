@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { SupabaseTrack, SupabasePlaylist, Track, Playlist } from "./types";
 
@@ -22,7 +21,9 @@ export const fetchDzikirTracks = async (): Promise<Track[]> => {
     album: track.album,
     albumArt: track.albumart,
     duration: track.duration,
-    audioUrl: track.audiourl,
+    audioUrl: track.audiourl && track.audiourl.startsWith('http')
+      ? track.audiourl
+      : `https://hbshmfktbafznerkgune.supabase.co/storage/v1/object/public/dzikir-audio/${track.audiourl?.replace(/^\/+/, '')}`,
   }));
 };
 
@@ -92,6 +93,8 @@ export const fetchTrackById = async (id: string): Promise<Track | null> => {
     album: data.album,
     albumArt: data.albumart,
     duration: data.duration,
-    audioUrl: data.audiourl,
+    audioUrl: data.audiourl && data.audiourl.startsWith('http')
+      ? data.audiourl
+      : `https://hbshmfktbafznerkgune.supabase.co/storage/v1/object/public/dzikir-audio/${data.audiourl?.replace(/^\/+/, '')}`,
   };
 };
