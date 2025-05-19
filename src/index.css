@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,8 +12,8 @@
   --player-dark: #1f2937;
   --player-text: #6b7280;
   --player-gray: #9ca3af;
-  --player-blue: #dbeafe;
-  --player-peach: #fde68a;
+  --player-blue: #3b82f6;
+  --player-orange: #f97316;
 
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
@@ -100,7 +101,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-poppins;
+    @apply bg-background text-foreground font-balsamiq;
   }
 }
 
@@ -187,4 +188,14 @@ input[type="range"]::-moz-range-thumb:hover {
 /* Loading spinner for audio */
 .audio-loading {
   @apply animate-spin text-player-primary;
+}
+
+/* Track player gradient (blue to orange - morning feel) */
+.track-player-gradient {
+  @apply bg-gradient-to-b from-player-blue to-player-orange;
+}
+
+/* Now playing gradient background */
+.now-playing-background {
+  @apply bg-gradient-to-br from-player-blue/30 via-white to-player-orange/30;
 }

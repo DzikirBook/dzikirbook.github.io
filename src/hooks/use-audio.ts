@@ -50,7 +50,7 @@ export function useAudio(
       // Log the audio URL we're trying to load
       console.log("Attempting to load audio:", track.audioUrl);
       
-      // Try to load the audio file
+      // Try to load the audio file with proper settings
       audio.src = track.audioUrl;
       audio.preload = "auto"; // Preload audio data
       audio.crossOrigin = "anonymous"; // Important for CORS

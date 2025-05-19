@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -71,6 +72,7 @@ export default {
 					text: 'var(--player-text)',
 					gray: 'var(--player-gray)',
 					blue: 'var(--player-blue)',
+					orange: 'var(--player-orange)',
 					peach: 'var(--player-peach)',
 				}
 			},
@@ -107,7 +109,7 @@ export default {
 				'pulse-subtle': 'pulse-subtle 2s infinite ease-in-out'
 			},
 			fontFamily: {
-				'poppins': ['Poppins', 'sans-serif'],
+				'balsamiq': ['Balsamiq Sans', 'cursive'],
 			}
 		}
 	},

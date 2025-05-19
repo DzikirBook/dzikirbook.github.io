@@ -17,14 +17,9 @@ const formatTitleFromFilename = (filename: string): string => {
 const getProperStorageUrl = (audioUrl: string | null): string => {
   if (!audioUrl) return '';
   
-  // If it's already a complete URL, return it
-  if (audioUrl.startsWith('http')) return audioUrl;
-  
-  // Remove any leading slashes
-  const cleanPath = audioUrl.replace(/^\/+/, '');
-  
-  // Construct the proper storage URL
-  return `https://hbshmfktbafznerkgune.supabase.co/storage/v1/object/public/dzikir-audio/${cleanPath}`;
+  // Return empty string for development/testing if needed
+  // This effectively disables the direct storage URL display
+  return '';
 };
 
 // Fetch all dzikir audio tracks
@@ -52,7 +47,7 @@ export const fetchDzikirTracks = async (): Promise<Track[]> => {
       album: track.album,
       albumArt: track.albumart,
       duration: track.duration,
-      audioUrl: getProperStorageUrl(track.audiourl),
+      audioUrl: track.audiourl, // Use the original URL from the database
     };
   });
 };
@@ -127,6 +122,6 @@ export const fetchTrackById = async (id: string): Promise<Track | null> => {
     album: data.album,
     albumArt: data.albumart,
     duration: data.duration,
-    audioUrl: getProperStorageUrl(data.audiourl),
+    audioUrl: data.audiourl, // Use the original URL from the database
   };
 };

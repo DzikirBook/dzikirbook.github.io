@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchTrackById } from "@/lib/supabase-client";
@@ -114,7 +113,7 @@ const TrackPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-player-blue/30 via-white to-player-peach/30 flex items-center justify-center p-4">
+      <div className="min-h-screen now-playing-background flex items-center justify-center p-4">
         <div className="animate-pulse flex flex-col items-center">
           <div className="h-48 w-48 bg-player-blue/20 rounded-xl mb-6"></div>
           <div className="h-6 w-48 bg-player-blue/20 rounded mb-3"></div>
@@ -127,7 +126,7 @@ const TrackPage = () => {
 
   if (!track) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-player-blue/30 via-white to-player-peach/30 flex items-center justify-center p-4">
+      <div className="min-h-screen now-playing-background flex items-center justify-center p-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Track Not Found</h1>
           <p className="mb-4">The requested audio track could not be found.</p>
@@ -143,14 +142,14 @@ const TrackPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-player-blue/30 via-white to-player-peach/30 flex items-center justify-center p-4">
+    <div className="min-h-screen now-playing-background flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-xl p-6">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold">{track.title}</h1>
           <p className="text-gray-600">{track.artist}</p>
         </div>
 
-        <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-br from-player-peach to-player-light rounded-xl flex items-center justify-center">
+        <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-b from-player-blue to-player-orange rounded-xl flex items-center justify-center">
           {track.albumArt ? (
             <img 
               src={track.albumArt} 
@@ -158,16 +157,9 @@ const TrackPage = () => {
               className="w-full h-full object-cover rounded-xl"
             />
           ) : (
-            <BookOpen className="w-24 h-24 text-player-primary/70" />
+            <BookOpen className="w-24 h-24 text-white" />
           )}
         </div>
-        
-        {/* Audio URL debug info (development only) */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mb-4 p-2 bg-gray-100 rounded text-xs overflow-hidden">
-            <p className="font-mono break-all">Audio URL: {track.audioUrl}</p>
-          </div>
-        )}
         
         {/* Error message display */}
         {hasError && (
@@ -191,7 +183,7 @@ const TrackPage = () => {
           <div className="text-center mb-6">
             <Button 
               onClick={handleManualPlay}
-              className="bg-player-primary hover:bg-player-primary/90 text-white px-8 py-4"
+              className="bg-player-blue hover:bg-player-blue/90 text-white px-8 py-4"
               size="lg"
             >
               Play Audio
