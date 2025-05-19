@@ -180,7 +180,7 @@ const TrackPage = () => {
           <div className="w-8"></div> {/* Empty div for centering */}
         </div>
 
-        <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-br from-[#F4BD58] to-[#77B5E1] rounded-xl flex items-center justify-center">
+        <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-br from-[#F49359] to-[#77B5E1] rounded-xl flex items-center justify-center">
           {track.albumArt ? (
             <img 
               src={track.albumArt} 

@@ -44,7 +44,7 @@ const NowPlaying: React.FC<NowPlayingProps> = ({
   if (!currentTrack) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-48 h-48 bg-gradient-to-br from-[#F4BD58] to-[#77B5E1] rounded-xl mb-6 flex items-center justify-center">
+        <div className="w-48 h-48 bg-gradient-to-br from-[#F49359] to-[#77B5E1] rounded-xl mb-6 flex items-center justify-center">
           <BookOpen className="w-16 h-16 text-white" />
         </div>
         <h2 className="text-lg font-medium text-gray-600 mb-2">No Dzikir Selected</h2>
@@ -55,7 +55,7 @@ const NowPlaying: React.FC<NowPlayingProps> = ({
 
   return (
     <div className="h-full flex flex-col items-center justify-center p-6 max-w-md mx-auto">
-      <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-br from-[#F4BD58] to-[#77B5E1] rounded-xl flex items-center justify-center">
+      <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-br from-[#F49359] to-[#77B5E1] rounded-xl flex items-center justify-center">
         {currentTrack.albumArt ? (
           <img 
             src={currentTrack.albumArt} 
