@@ -5,7 +5,7 @@ import { fetchTrackById } from "@/lib/supabase-client";
 import { Playlist, Track } from "@/lib/types";
 import { useAudio } from "@/hooks/use-audio";
 import AudioControls from "@/components/AudioControls";
-import { BookOpen, AlertTriangle } from "lucide-react";
+import { BookOpen, AlertTriangle, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
@@ -51,7 +51,8 @@ const TrackPage = () => {
     pause, 
     toggle,
     seek, 
-    setVolume 
+    setVolume,
+    retryLoading
   } = useAudio(track);
 
   // Fetch the track data
@@ -108,8 +109,15 @@ const TrackPage = () => {
   // Function to retry loading the track
   const handleRetry = () => {
     setAutoplayAttempted(true);
-    setLoadAttempts(prev => prev + 1); // Trigger the effect to reload the track
-    play();
+    setLoadAttempts(prev => prev + 1);
+    retryLoading();
+  };
+
+  // Function to open audio in a new tab (bypass CORS)
+  const handleOpenInNewTab = () => {
+    if (track?.audioUrl) {
+      window.open(track.audioUrl, '_blank');
+    }
   };
 
   if (isLoading) {
@@ -131,12 +139,12 @@ const TrackPage = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Track Not Found</h1>
           <p className="mb-4">The requested audio track could not be found.</p>
-          <button 
+          <Button 
             onClick={() => navigate('/')}
             className="bg-player-blue text-white px-4 py-2 rounded-md"
           >
             Back to Home
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -150,7 +158,7 @@ const TrackPage = () => {
           <p className="text-gray-600">{track.artist}</p>
         </div>
 
-        <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-b from-player-blue to-player-orange rounded-xl flex items-center justify-center">
+        <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-br from-player-orange to-player-blue rounded-xl flex items-center justify-center">
           {track.albumArt ? (
             <img 
               src={track.albumArt} 
@@ -162,7 +170,7 @@ const TrackPage = () => {
           )}
         </div>
         
-        {/* Error message display */}
+        {/* Error message display with enhanced options */}
         {hasError && (
           <div className="text-center mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center justify-center mb-2">
@@ -170,7 +178,7 @@ const TrackPage = () => {
               <p className="font-medium text-red-700">Audio Error</p>
             </div>
             <p className="text-sm text-red-600 mb-3">
-              {errorMessage || "There was a problem playing this audio. It might be due to CORS policy restrictions."}
+              {errorMessage || "There was a problem playing this audio. The file might be restricted due to CORS policy."}
             </p>
             <div className="flex flex-col gap-2">
               <Button 
@@ -180,8 +188,18 @@ const TrackPage = () => {
               >
                 Retry
               </Button>
-              <p className="text-xs text-gray-500">
-                If this error persists, try accessing this audio from a different browser or device.
+              
+              <Button 
+                onClick={handleOpenInNewTab}
+                variant="outline"
+                className="flex items-center gap-1"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Listen in New Tab
+              </Button>
+              
+              <p className="text-xs text-gray-500 mt-2">
+                The audio file may be restricted by CORS policy. Try accessing from a different browser or device.
               </p>
             </div>
           </div>

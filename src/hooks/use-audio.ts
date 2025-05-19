@@ -18,6 +18,7 @@ interface UseAudioReturn {
   seek: (position: number) => void;
   setVolume: (volume: number) => void;
   onEnded: () => void;
+  retryLoading: () => void;
 }
 
 export function useAudio(
@@ -32,17 +33,20 @@ export function useAudio(
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [audioSource, setAudioSource] = useState<string | null>(null);
+  const [loadAttempts, setLoadAttempts] = useState(0);
   const { toast } = useToast();
 
-  // Update audio source when track changes
+  // Update audio source when track changes or retry is triggered
   useEffect(() => {
     const audio = audioRef.current;
     
-    if (track?.audioUrl) {
-      // Reset error state when trying a new track
+    if (track?.audioUrl && (audioSource !== track.audioUrl || loadAttempts > 0)) {
+      // Reset error state when trying a new track or retrying
       setHasError(false);
       setErrorMessage(null);
       setIsLoading(true);
+      setAudioSource(track.audioUrl);
 
       // Make sure we're paused before loading a new source
       audio.pause();
@@ -83,7 +87,7 @@ export function useAudio(
         console.log("Audio can play now");
       };
       
-      const errorHandler = (event: ErrorEvent) => {
+      const errorHandler = (event: Event) => {
         console.error("Error loading audio:", event, audio.error);
         setIsLoading(false);
         setIsPlaying(false);
@@ -96,24 +100,24 @@ export function useAudio(
               setErrorMessage("The loading of the audio was aborted.");
               break;
             case MediaError.MEDIA_ERR_NETWORK:
-              setErrorMessage("A network error caused the audio download to fail.");
+              setErrorMessage("Network error or CORS policy issue. Try accessing from a different browser.");
               break;
             case MediaError.MEDIA_ERR_DECODE:
-              setErrorMessage("The audio file is corrupted or not supported.");
+              setErrorMessage("The audio file is corrupted or not supported by your browser.");
               break;
             case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
               setErrorMessage("The audio format or CORS policy is not supported by your browser.");
               break;
             default:
-              setErrorMessage("Could not load audio file. Please try again later.");
+              setErrorMessage("Could not load audio file. Please try from a different browser or device.");
           }
         } else {
-          setErrorMessage("Could not load audio file. Please try again later.");
+          setErrorMessage("Could not load audio file. Please try from a different browser or device.");
         }
         
         toast({
           title: "Audio Error",
-          description: "Could not load audio file. Please check console for details.",
+          description: "Could not load audio file. CORS policy may be blocking access.",
           variant: "destructive",
         });
       };
@@ -127,13 +131,14 @@ export function useAudio(
         audio.removeEventListener('canplay', canPlayHandler);
         audio.removeEventListener('error', errorHandler);
       };
-    } else {
+    } else if (!track?.audioUrl) {
       // No track or no URL
       audio.pause();
       setIsPlaying(false);
       setProgress(0);
+      setAudioSource(null);
     }
-  }, [track, isPlaying, toast]);
+  }, [track, isPlaying, toast, audioSource, loadAttempts]);
 
   // Update volume
   useEffect(() => {
@@ -224,6 +229,11 @@ export function useAudio(
     setVolume(newVolume);
   };
 
+  // Add a retry function to reload the audio file
+  const retryLoading = () => {
+    setLoadAttempts(prev => prev + 1);
+  };
+
   return {
     audioRef,
     isPlaying,
@@ -239,5 +249,6 @@ export function useAudio(
     seek,
     setVolume: handleSetVolume,
     onEnded: onEnded || (() => {}),
+    retryLoading,
   };
 }

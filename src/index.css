@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&display=swap');
 
 @tailwind base;
@@ -192,10 +193,10 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* Track player gradient (blue to orange - morning feel) */
 .track-player-gradient {
-  @apply bg-gradient-to-b from-player-blue to-player-orange;
+  @apply bg-gradient-to-b from-player-orange to-player-blue;
 }
 
 /* Now playing gradient background */
 .now-playing-background {
-  background: linear-gradient(to bottom right, rgba(119, 181, 225, 0.3), white, rgba(244, 189, 88, 0.3));
+  background: linear-gradient(to bottom right, rgba(244, 189, 88, 0.3), white, rgba(119, 181, 225, 0.3));
 }

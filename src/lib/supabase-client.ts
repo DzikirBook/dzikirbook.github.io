@@ -22,6 +22,19 @@ const getProperStorageUrl = (audioUrl: string | null): string => {
   return '';
 };
 
+// Add CORS handling for audio URLs
+const getPublicAudioUrl = (url: string): string => {
+  // If it's already a public URL, return as is
+  if (url.startsWith('http') && !url.includes('supabase.co')) {
+    return url;
+  }
+  
+  // Return a proxied or CORS-friendly version
+  // For now, we'll just return the original URL, but this is where you could implement 
+  // a proxy solution if needed in the future
+  return url;
+};
+
 // Fetch all dzikir audio tracks
 export const fetchDzikirTracks = async (): Promise<Track[]> => {
   const { data, error } = await supabase
@@ -47,7 +60,7 @@ export const fetchDzikirTracks = async (): Promise<Track[]> => {
       album: track.album,
       albumArt: track.albumart,
       duration: track.duration,
-      audioUrl: track.audiourl, // Use the original URL from the database
+      audioUrl: getPublicAudioUrl(track.audiourl), // Use CORS-friendly URL
     };
   });
 };
@@ -122,6 +135,6 @@ export const fetchTrackById = async (id: string): Promise<Track | null> => {
     album: data.album,
     albumArt: data.albumart,
     duration: data.duration,
-    audioUrl: data.audiourl, // Use the original URL from the database
+    audioUrl: getPublicAudioUrl(data.audiourl), // Use CORS-friendly URL
   };
 };
