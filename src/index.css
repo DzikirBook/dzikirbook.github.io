@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&display=swap');
 
 @tailwind base;
@@ -14,6 +13,7 @@
   --player-gray: #9ca3af;
   --player-blue: #3b82f6;
   --player-orange: #f97316;
+  --player-peach: #ffd8b4;
 
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
@@ -197,5 +197,5 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* Now playing gradient background */
 .now-playing-background {
-  @apply bg-gradient-to-br from-player-blue/30 via-white to-player-orange/30;
+  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.3), white, rgba(249, 115, 22, 0.3));
 }
