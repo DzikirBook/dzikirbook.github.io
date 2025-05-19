@@ -11,8 +11,8 @@
   --player-dark: #1f2937;
   --player-text: #6b7280;
   --player-gray: #9ca3af;
-  --player-blue: #3b82f6;
-  --player-orange: #f97316;
+  --player-blue: #77B5E1;
+  --player-orange: #F4BD58;
   --player-peach: #ffd8b4;
 
   --background: 0 0% 100%;
@@ -150,7 +150,7 @@ input[type="range"] {
   height: 5px;
   background: #e5e7eb;
   border-radius: 5px;
-  background-image: linear-gradient(#3b82f6, #3b82f6);
+  background-image: linear-gradient(#77B5E1, #77B5E1);
   background-repeat: no-repeat;
 }
 
@@ -160,7 +160,7 @@ input[type="range"]::-webkit-slider-thumb {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: #77B5E1;
   cursor: pointer;
   transition: all 0.15s ease-in-out;
 }
@@ -169,7 +169,7 @@ input[type="range"]::-moz-range-thumb {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: #77B5E1;
   cursor: pointer;
   border: none;
   transition: all 0.15s ease-in-out;
@@ -187,7 +187,7 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* Loading spinner for audio */
 .audio-loading {
-  @apply animate-spin text-player-primary;
+  @apply animate-spin text-player-blue;
 }
 
 /* Track player gradient (blue to orange - morning feel) */
@@ -197,5 +197,5 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* Now playing gradient background */
 .now-playing-background {
-  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.3), white, rgba(249, 115, 22, 0.3));
+  background: linear-gradient(to bottom right, rgba(119, 181, 225, 0.3), white, rgba(244, 189, 88, 0.3));
 }

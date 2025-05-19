@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchTrackById } from "@/lib/supabase-client";
@@ -168,14 +169,21 @@ const TrackPage = () => {
               <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
               <p className="font-medium text-red-700">Audio Error</p>
             </div>
-            <p className="text-sm text-red-600 mb-3">{errorMessage || "There was a problem playing this audio"}</p>
-            <Button 
-              onClick={handleRetry}
-              variant="destructive"
-              className="px-6"
-            >
-              Retry
-            </Button>
+            <p className="text-sm text-red-600 mb-3">
+              {errorMessage || "There was a problem playing this audio. It might be due to CORS policy restrictions."}
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button 
+                onClick={handleRetry}
+                variant="destructive"
+                className="px-6"
+              >
+                Retry
+              </Button>
+              <p className="text-xs text-gray-500">
+                If this error persists, try accessing this audio from a different browser or device.
+              </p>
+            </div>
           </div>
         )}
         

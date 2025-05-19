@@ -41,7 +41,7 @@ const NowPlaying: React.FC<NowPlayingProps> = ({
 
   return (
     <div className="h-full flex flex-col items-center justify-center p-6 max-w-md mx-auto">
-      <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-br from-player-peach to-player-light rounded-xl flex items-center justify-center">
+      <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-br from-player-blue to-player-orange rounded-xl flex items-center justify-center">
         {currentTrack.albumArt ? (
           <img 
             src={currentTrack.albumArt} 
@@ -49,7 +49,7 @@ const NowPlaying: React.FC<NowPlayingProps> = ({
             className="w-full h-full object-cover rounded-xl"
           />
         ) : (
-          <BookOpen className="w-24 h-24 text-player-primary/70" />
+          <BookOpen className="w-24 h-24 text-white" />
         )}
       </div>
       

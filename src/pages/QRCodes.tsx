@@ -39,7 +39,7 @@ const QRCodesPage = () => {
   }, [toast]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-player-blue/30 via-white to-player-peach/30 p-4 md:p-8">
+    <div className="min-h-screen now-playing-background p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center mb-6">
           <Button 

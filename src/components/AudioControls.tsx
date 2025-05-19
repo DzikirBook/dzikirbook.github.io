@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { SkipBack, SkipForward, Play, Pause, Volume2, Shuffle, Repeat, Loader2 } from 'lucide-react';
@@ -34,7 +35,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     if (progressRef.current) {
       const percent = progress * 100;
       progressRef.current.style.backgroundImage = 
-        `linear-gradient(to right, var(--player-primary) 0%, var(--player-primary) ${percent}%, #e5e7eb ${percent}%, #e5e7eb 100%)`;
+        `linear-gradient(to right, var(--player-blue) 0%, var(--player-blue) ${percent}%, #e5e7eb ${percent}%, #e5e7eb 100%)`;
     }
   }, [progress]);
 
@@ -86,7 +87,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
               onClick={onToggleShuffle}
               className={cn(
                 "control-button",
-                isShuffle ? "text-player-primary" : "text-player-text"
+                isShuffle ? "text-player-blue" : "text-player-text"
               )}
               aria-label="Toggle shuffle"
               title="Toggle shuffle"
@@ -110,7 +111,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           className={cn(
             "play-button",
             minimal ? "w-8 h-8" : "w-12 h-12",
-            isPlaying ? "bg-player-primary" : "bg-player-primary" 
+            isPlaying ? "bg-player-blue" : "bg-player-blue" 
           )}
           aria-label={isPlaying ? "Pause" : "Play"}
           title={isPlaying ? "Pause" : "Play"}
@@ -137,7 +138,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
               onClick={onToggleRepeat}
               className={cn(
                 "control-button",
-                isRepeat ? "text-player-primary" : "text-player-text"
+                isRepeat ? "text-player-blue" : "text-player-text"
               )}
               aria-label="Toggle repeat"
               title="Toggle repeat"
