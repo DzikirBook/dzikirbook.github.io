@@ -1,5 +1,31 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { SupabaseTrack, SupabasePlaylist, Track, Playlist } from "./types";
+
+// Helper function to format track titles from filenames
+const formatTitleFromFilename = (filename: string): string => {
+  // Remove file extension and replace underscores/hyphens with spaces
+  const nameOnly = filename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
+  
+  // Capitalize each word
+  return nameOnly.split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+// Helper function to ensure proper URL formatting for Supabase storage
+const getProperStorageUrl = (audioUrl: string | null): string => {
+  if (!audioUrl) return '';
+  
+  // If it's already a complete URL, return it
+  if (audioUrl.startsWith('http')) return audioUrl;
+  
+  // Remove any leading slashes
+  const cleanPath = audioUrl.replace(/^\/+/, '');
+  
+  // Construct the proper storage URL
+  return `https://hbshmfktbafznerkgune.supabase.co/storage/v1/object/public/dzikir-audio/${cleanPath}`;
+};
 
 // Fetch all dzikir audio tracks
 export const fetchDzikirTracks = async (): Promise<Track[]> => {
@@ -14,17 +40,21 @@ export const fetchDzikirTracks = async (): Promise<Track[]> => {
   }
 
   // Convert Supabase data to our Track interface
-  return (data || []).map((track: any) => ({
-    id: track.id,
-    title: track.title,
-    artist: track.artist,
-    album: track.album,
-    albumArt: track.albumart,
-    duration: track.duration,
-    audioUrl: track.audiourl && track.audiourl.startsWith('http')
-      ? track.audiourl
-      : `https://hbshmfktbafznerkgune.supabase.co/storage/v1/object/public/dzikir-audio/${track.audiourl?.replace(/^\/+/, '')}`,
-  }));
+  return (data || []).map((track: any) => {
+    // Extract filename from audioUrl for title formatting if title is missing or generic
+    const filename = track.audiourl?.split('/').pop() || '';
+    const title = track.title || formatTitleFromFilename(filename);
+    
+    return {
+      id: track.id,
+      title: title,
+      artist: track.artist,
+      album: track.album,
+      albumArt: track.albumart,
+      duration: track.duration,
+      audioUrl: getProperStorageUrl(track.audiourl),
+    };
+  });
 };
 
 // Fetch all playlists
@@ -86,15 +116,17 @@ export const fetchTrackById = async (id: string): Promise<Track | null> => {
     return null;
   }
 
+  // Extract filename from audioUrl for title formatting if title is missing or generic
+  const filename = data.audiourl?.split('/').pop() || '';
+  const title = data.title || formatTitleFromFilename(filename);
+
   return {
     id: data.id,
-    title: data.title,
+    title: title,
     artist: data.artist,
     album: data.album,
     albumArt: data.albumart,
     duration: data.duration,
-    audioUrl: data.audiourl && data.audiourl.startsWith('http')
-      ? data.audiourl
-      : `https://hbshmfktbafznerkgune.supabase.co/storage/v1/object/public/dzikir-audio/${data.audiourl?.replace(/^\/+/, '')}`,
+    audioUrl: getProperStorageUrl(data.audiourl),
   };
 };

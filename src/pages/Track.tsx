@@ -16,6 +16,7 @@ const TrackPage = () => {
   const [track, setTrack] = useState<Track | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [autoplayAttempted, setAutoplayAttempted] = useState(false);
+  const [loadAttempts, setLoadAttempts] = useState(0);
 
   // Create a dummy playlist with just this track
   const playlist: Playlist | null = track
@@ -63,6 +64,7 @@ const TrackPage = () => {
         const trackData = await fetchTrackById(id);
         
         if (trackData) {
+          console.log("Successfully loaded track data:", trackData);
           setTrack(trackData);
           // Don't autoplay - we'll wait for user interaction
           setAutoplayAttempted(false);
@@ -87,7 +89,7 @@ const TrackPage = () => {
     };
 
     loadTrack();
-  }, [id, navigate, toast]);
+  }, [id, navigate, toast, loadAttempts]);
 
   // Handle player controls
   const handlePlayPause = () => toggle();
@@ -103,9 +105,10 @@ const TrackPage = () => {
     play();
   };
 
-  // Function to retry playing when there is an error
+  // Function to retry loading the track
   const handleRetry = () => {
     setAutoplayAttempted(true);
+    setLoadAttempts(prev => prev + 1); // Trigger the effect to reload the track
     play();
   };
 
@@ -158,6 +161,13 @@ const TrackPage = () => {
             <BookOpen className="w-24 h-24 text-player-primary/70" />
           )}
         </div>
+        
+        {/* Audio URL debug info (development only) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mb-4 p-2 bg-gray-100 rounded text-xs overflow-hidden">
+            <p className="font-mono break-all">Audio URL: {track.audioUrl}</p>
+          </div>
+        )}
         
         {/* Error message display */}
         {hasError && (

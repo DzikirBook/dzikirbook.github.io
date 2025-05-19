@@ -47,13 +47,17 @@ export function useAudio(
       // Make sure we're paused before loading a new source
       audio.pause();
       
+      // Log the audio URL we're trying to load
+      console.log("Attempting to load audio:", track.audioUrl);
+      
       // Try to load the audio file
       audio.src = track.audioUrl;
       audio.preload = "auto"; // Preload audio data
       audio.crossOrigin = "anonymous"; // Important for CORS
       audio.load();
       
-      const loadHandler = () => {
+      const loadedDataHandler = () => {
+        console.log("Audio data loaded successfully");
         setIsLoading(false);
         setDuration(audio.duration);
         if (isPlaying) {
@@ -75,25 +79,52 @@ export function useAudio(
         }
       };
       
-      const errorHandler = (error: ErrorEvent) => {
-        console.error("Error loading audio:", error);
+      const canPlayHandler = () => {
+        console.log("Audio can play now");
+      };
+      
+      const errorHandler = (event: ErrorEvent) => {
+        console.error("Error loading audio:", event, audio.error);
         setIsLoading(false);
         setIsPlaying(false);
         setHasError(true);
-        setErrorMessage("Could not load audio file. Please try again later.");
+        
+        // Provide more specific error messages based on the error code
+        if (audio.error) {
+          switch (audio.error.code) {
+            case MediaError.MEDIA_ERR_ABORTED:
+              setErrorMessage("The loading of the audio was aborted.");
+              break;
+            case MediaError.MEDIA_ERR_NETWORK:
+              setErrorMessage("A network error caused the audio download to fail.");
+              break;
+            case MediaError.MEDIA_ERR_DECODE:
+              setErrorMessage("The audio file is corrupted or not supported.");
+              break;
+            case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+              setErrorMessage("The audio format or CORS policy is not supported by your browser.");
+              break;
+            default:
+              setErrorMessage("Could not load audio file. Please try again later.");
+          }
+        } else {
+          setErrorMessage("Could not load audio file. Please try again later.");
+        }
         
         toast({
           title: "Audio Error",
-          description: "Could not load audio file. Please try again later.",
+          description: "Could not load audio file. Please check console for details.",
           variant: "destructive",
         });
       };
       
-      audio.addEventListener('loadeddata', loadHandler);
+      audio.addEventListener('loadeddata', loadedDataHandler);
+      audio.addEventListener('canplay', canPlayHandler);
       audio.addEventListener('error', errorHandler);
       
       return () => {
-        audio.removeEventListener('loadeddata', loadHandler);
+        audio.removeEventListener('loadeddata', loadedDataHandler);
+        audio.removeEventListener('canplay', canPlayHandler);
         audio.removeEventListener('error', errorHandler);
       };
     } else {
