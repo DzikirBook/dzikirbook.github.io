@@ -13,25 +13,22 @@ const formatTitleFromFilename = (filename: string): string => {
     .join(' ');
 };
 
-// Helper function to ensure proper URL formatting for Supabase storage
-const getProperStorageUrl = (audioUrl: string | null): string => {
-  if (!audioUrl) return '';
-  
-  // Return empty string for development/testing if needed
-  // This effectively disables the direct storage URL display
-  return '';
-};
-
-// Add CORS handling for audio URLs
+// Helper function to provide CORS-friendly audio URLs
 const getPublicAudioUrl = (url: string): string => {
   // If it's already a public URL, return as is
   if (url.startsWith('http') && !url.includes('supabase.co')) {
     return url;
   }
   
-  // Return a proxied or CORS-friendly version
-  // For now, we'll just return the original URL, but this is where you could implement 
-  // a proxy solution if needed in the future
+  // For Supabase URLs, provide a CORS-friendly version
+  // First, check if this is a Supabase storage URL
+  if (url.includes('supabase.co') && url.includes('storage/v1')) {
+    // Instead of modifying the URL, we'll return it as is
+    // The audio player will handle CORS issues by offering fallback options
+    return url;
+  }
+  
+  // Return the original URL as a last resort
   return url;
 };
 
@@ -56,11 +53,11 @@ export const fetchDzikirTracks = async (): Promise<Track[]> => {
     return {
       id: track.id,
       title: title,
-      artist: track.artist,
-      album: track.album,
+      artist: track.artist || 'Unknown Artist',
+      album: track.album || 'Unknown Album',
       albumArt: track.albumart,
-      duration: track.duration,
-      audioUrl: getPublicAudioUrl(track.audiourl), // Use CORS-friendly URL
+      duration: track.duration || 0,
+      audioUrl: getPublicAudioUrl(track.audiourl),
     };
   });
 };
@@ -104,7 +101,7 @@ export const fetchPlaylists = async (): Promise<Playlist[]> => {
 
     return {
       id: playlist.id,
-      name: playlist.name,
+      name: playlist.name || 'Unnamed Playlist',
       coverArt: playlist.coverart,
       tracks: playlistTracks,
     };
@@ -131,10 +128,10 @@ export const fetchTrackById = async (id: string): Promise<Track | null> => {
   return {
     id: data.id,
     title: title,
-    artist: data.artist,
-    album: data.album,
+    artist: data.artist || 'Unknown Artist',
+    album: data.album || 'Unknown Album',
     albumArt: data.albumart,
-    duration: data.duration,
-    audioUrl: getPublicAudioUrl(data.audiourl), // Use CORS-friendly URL
+    duration: data.duration || 0,
+    audioUrl: getPublicAudioUrl(data.audiourl), 
   };
 };

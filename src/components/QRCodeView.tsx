@@ -4,7 +4,8 @@ import { Track } from '@/lib/types';
 // Fix the import to use named export instead of default export
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, ExternalLink, Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface QRCodeViewProps {
   tracks: Track[];
@@ -14,6 +15,7 @@ interface QRCodeViewProps {
 const QRCodeView: React.FC<QRCodeViewProps> = ({ tracks, baseUrl }) => {
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const qrRef = useRef<SVGSVGElement>(null);
+  const { toast } = useToast();
 
   const generateQrUrl = (track: Track) => {
     return `${baseUrl}/track/${track.id}`;
@@ -50,9 +52,37 @@ const QRCodeView: React.FC<QRCodeViewProps> = ({ tracks, baseUrl }) => {
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
+      
+      toast({
+        title: "QR Code Downloaded",
+        description: `QR code for "${selectedTrack.title}" has been saved to your device.`,
+      });
     };
     
     img.src = url;
+  };
+
+  const copyLinkToClipboard = () => {
+    if (!selectedTrack) return;
+    
+    const url = generateQrUrl(selectedTrack);
+    navigator.clipboard.writeText(url).then(() => {
+      toast({
+        title: "Link Copied",
+        description: "Direct link copied to clipboard.",
+      });
+    }).catch(err => {
+      toast({
+        title: "Failed to Copy",
+        description: "Could not copy the link to clipboard.",
+        variant: "destructive"
+      });
+    });
+  };
+
+  const openInNewTab = () => {
+    if (!selectedTrack) return;
+    window.open(generateQrUrl(selectedTrack), '_blank');
   };
 
   return (
@@ -97,18 +127,38 @@ const QRCodeView: React.FC<QRCodeViewProps> = ({ tracks, baseUrl }) => {
             />
           </div>
           
-          <div className="text-center mb-4">
+          <div className="text-center mb-6">
             <p className="text-xs break-all max-w-xs">{generateQrUrl(selectedTrack)}</p>
           </div>
 
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2"
-            onClick={downloadQRCode}
-          >
-            <Download size={16} />
-            Download QR Code
-          </Button>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={downloadQRCode}
+            >
+              <Download size={16} />
+              Download QR Code
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={copyLinkToClipboard}
+            >
+              <Copy size={16} />
+              Copy Link
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={openInNewTab}
+            >
+              <ExternalLink size={16} />
+              Test Link
+            </Button>
+          </div>
         </div>
       )}
     </div>

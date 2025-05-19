@@ -22,7 +22,15 @@ const QRCodesPage = () => {
       try {
         setIsLoading(true);
         const data = await fetchDzikirTracks();
-        setTracks(data);
+        if (data.length === 0) {
+          toast({
+            title: 'No tracks found',
+            description: 'No audio tracks were found in the database.',
+            variant: 'destructive',
+          });
+        } else {
+          setTracks(data);
+        }
       } catch (error) {
         console.error('Error fetching tracks:', error);
         toast({
@@ -39,7 +47,10 @@ const QRCodesPage = () => {
   }, [toast]);
 
   return (
-    <div className="min-h-screen now-playing-background p-4 md:p-8">
+    <div className="min-h-screen p-4 md:p-8" 
+         style={{
+           background: "linear-gradient(to bottom right, rgba(244, 189, 88, 0.3), white, rgba(119, 181, 225, 0.3))"
+         }}>
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center mb-6">
           <Button 
@@ -55,7 +66,7 @@ const QRCodesPage = () => {
         
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin w-8 h-8 border-4 border-player-blue rounded-full border-t-transparent"></div>
+            <div className="animate-spin w-8 h-8 border-4 border-[#77B5E1] rounded-full border-t-transparent"></div>
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-lg p-6">
@@ -63,7 +74,16 @@ const QRCodesPage = () => {
               Generate QR codes for each audio track. Users can scan these codes to access individual tracks directly.
             </p>
             
-            <QRCodeView tracks={tracks} baseUrl={baseUrl} />
+            {tracks.length === 0 ? (
+              <div className="text-center p-8">
+                <p className="text-gray-500 mb-4">No audio tracks available.</p>
+                <Button onClick={() => navigate('/')}>
+                  Return to Player
+                </Button>
+              </div>
+            ) : (
+              <QRCodeView tracks={tracks} baseUrl={baseUrl} />
+            )}
           </div>
         )}
       </div>

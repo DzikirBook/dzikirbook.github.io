@@ -30,10 +30,13 @@ const MusicPlayer: React.FC = () => {
     isPlaying, 
     progress, 
     volume,
+    hasError,
+    errorMessage,
     play,
     pause,
     seek,
-    setVolume
+    setVolume,
+    retryLoading
   } = useAudio(playerState.currentTrack, handleTrackEnded);
 
   // Update player state when audio state changes
@@ -102,6 +105,12 @@ const MusicPlayer: React.FC = () => {
     } else {
       play();
     }
+  };
+
+  // Handle retry loading when there's an error
+  const handleRetryLoading = () => {
+    retryLoading();
+    play();
   };
 
   const handleNext = () => {
@@ -201,6 +210,9 @@ const MusicPlayer: React.FC = () => {
             onVolumeChange={handleVolumeChange}
             onToggleShuffle={handleToggleShuffle}
             onToggleRepeat={handleToggleRepeat}
+            hasError={hasError}
+            errorMessage={errorMessage}
+            onRetryLoading={handleRetryLoading}
           />
         );
       case 'playlist':

@@ -120,13 +120,21 @@ const TrackPage = () => {
     }
   };
 
+  // Function to go back to home
+  const handleGoBack = () => {
+    navigate('/');
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen now-playing-background flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4"
+           style={{
+             background: "linear-gradient(to bottom right, rgba(244, 189, 88, 0.3), white, rgba(119, 181, 225, 0.3))"
+           }}>
         <div className="animate-pulse flex flex-col items-center">
-          <div className="h-48 w-48 bg-player-blue/20 rounded-xl mb-6"></div>
-          <div className="h-6 w-48 bg-player-blue/20 rounded mb-3"></div>
-          <div className="h-4 w-36 bg-player-blue/20 rounded"></div>
+          <div className="h-48 w-48 bg-[#77B5E1]/20 rounded-xl mb-6"></div>
+          <div className="h-6 w-48 bg-[#77B5E1]/20 rounded mb-3"></div>
+          <div className="h-4 w-36 bg-[#77B5E1]/20 rounded"></div>
           <p className="mt-8 text-player-text">Loading audio...</p>
         </div>
       </div>
@@ -135,13 +143,16 @@ const TrackPage = () => {
 
   if (!track) {
     return (
-      <div className="min-h-screen now-playing-background flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4"
+           style={{
+             background: "linear-gradient(to bottom right, rgba(244, 189, 88, 0.3), white, rgba(119, 181, 225, 0.3))"
+           }}>
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Track Not Found</h1>
           <p className="mb-4">The requested audio track could not be found.</p>
           <Button 
             onClick={() => navigate('/')}
-            className="bg-player-blue text-white px-4 py-2 rounded-md"
+            className="bg-[#77B5E1] hover:bg-[#77B5E1]/90 text-white px-4 py-2 rounded-md"
           >
             Back to Home
           </Button>
@@ -151,14 +162,25 @@ const TrackPage = () => {
   }
 
   return (
-    <div className="min-h-screen now-playing-background flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4"
+         style={{
+           background: "linear-gradient(to bottom right, rgba(244, 189, 88, 0.3), white, rgba(119, 181, 225, 0.3))"
+         }}>
       <div className="w-full max-w-md bg-white rounded-xl shadow-xl p-6">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold">{track.title}</h1>
-          <p className="text-gray-600">{track.artist}</p>
+        <div className="flex justify-between items-center mb-6">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleGoBack}
+            className="text-gray-500"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h1 className="text-xl font-bold flex-1 text-center">{track.title}</h1>
+          <div className="w-8"></div> {/* Empty div for centering */}
         </div>
 
-        <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-br from-player-orange to-player-blue rounded-xl flex items-center justify-center">
+        <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-br from-[#F4BD58] to-[#77B5E1] rounded-xl flex items-center justify-center">
           {track.albumArt ? (
             <img 
               src={track.albumArt} 
@@ -168,6 +190,12 @@ const TrackPage = () => {
           ) : (
             <BookOpen className="w-24 h-24 text-white" />
           )}
+        </div>
+        
+        {/* Basic track info */}
+        <div className="text-center mb-4">
+          <p className="text-gray-600">{track.artist}</p>
+          <p className="text-gray-500 text-sm">{track.album}</p>
         </div>
         
         {/* Error message display with enhanced options */}
@@ -209,7 +237,7 @@ const TrackPage = () => {
           <div className="text-center mb-6">
             <Button 
               onClick={handleManualPlay}
-              className="bg-player-blue hover:bg-player-blue/90 text-white px-8 py-4"
+              className="bg-[#77B5E1] hover:bg-[#77B5E1]/90 text-white px-8 py-4"
               size="lg"
             >
               Play Audio
@@ -243,5 +271,8 @@ const TrackPage = () => {
     </div>
   );
 };
+
+// Add missing import
+import { ArrowLeft } from "lucide-react";
 
 export default TrackPage;
