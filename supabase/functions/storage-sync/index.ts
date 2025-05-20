@@ -23,6 +23,102 @@ const formatTitleFromFilename = (filename: string): string => {
     .join(' ');
 };
 
+// Function to synchronize existing files from a bucket
+const syncExistingFiles = async (bucketId: string) => {
+  try {
+    console.log(`Starting sync of existing files in bucket: ${bucketId}`);
+    
+    // List all files in the bucket
+    const { data: files, error: listError } = await supabase
+      .storage
+      .from(bucketId)
+      .list();
+    
+    if (listError) {
+      console.error("Error listing files:", listError);
+      return { error: listError.message };
+    }
+    
+    console.log(`Found ${files?.length || 0} files in bucket`);
+    
+    const results = [];
+    
+    // Process each file
+    for (const file of files || []) {
+      // Skip folders
+      if (file.id === null) continue;
+      
+      const name = file.name;
+      
+      // Only process audio files
+      const isAudioFile = name.toLowerCase().endsWith('.mp3') || 
+                          name.toLowerCase().endsWith('.wav') || 
+                          name.toLowerCase().endsWith('.ogg') ||
+                          name.toLowerCase().endsWith('.m4a');
+      
+      if (!isAudioFile) continue;
+      
+      // Check if this file already exists in the dzikiraudio table
+      const { data: existingRecord } = await supabase
+        .from('dzikiraudio')
+        .select('id')
+        .eq('audiourl', `${supabaseUrl}/storage/v1/object/public/${bucketId}/${name}`)
+        .maybeSingle();
+      
+      if (existingRecord) {
+        console.log(`File ${name} already exists in database, skipping`);
+        continue;
+      }
+      
+      // Format nice title from filename
+      const title = formatTitleFromFilename(name);
+      
+      // Determine category from filename
+      let artist = 'Unknown Artist';
+      let album = 'Unknown Album';
+      
+      if (name.toLowerCase().includes('doa')) {
+        artist = 'Daily Prayers';
+        album = 'Islamic Prayers';
+      } else if (name.toLowerCase().includes('dzikir') || name.toLowerCase().includes('tahmid') || name.toLowerCase().includes('istighfar')) {
+        artist = 'Daily Dzikir';
+        album = 'Islamic Recitations';
+      } else if (name.toLowerCase().includes('quran') || name.toLowerCase().includes('ayat') || name.toLowerCase().includes('al-')) {
+        artist = 'Quran Recitation';
+        album = 'Islamic Audio Collection';
+      }
+      
+      // Prepare record to insert
+      const audioRecord = {
+        title: title,
+        artist: artist,
+        album: album,
+        audiourl: `${supabaseUrl}/storage/v1/object/public/${bucketId}/${name}`,
+        duration: 0,
+      };
+      
+      // Insert the new record into dzikiraudio table
+      const { data, error } = await supabase
+        .from('dzikiraudio')
+        .insert(audioRecord)
+        .select();
+      
+      if (error) {
+        console.error(`Error inserting record for ${name}:`, error);
+        results.push({ file: name, success: false, error: error.message });
+      } else {
+        console.log(`Successfully added ${name} to database:`, data);
+        results.push({ file: name, success: true, data });
+      }
+    }
+    
+    return { success: true, results };
+  } catch (error) {
+    console.error("Error syncing existing files:", error);
+    return { success: false, error: error.message };
+  }
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -30,6 +126,19 @@ serve(async (req) => {
   }
 
   try {
+    // Check if this is a manual sync request
+    const url = new URL(req.url);
+    if (url.searchParams.get('sync') === 'true') {
+      const bucketId = url.searchParams.get('bucket') || 'audio';
+      const result = await syncExistingFiles(bucketId);
+      
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // Process regular webhook event
     const { record } = await req.json();
     console.log("Storage event received:", record);
 
@@ -72,14 +181,29 @@ serve(async (req) => {
 
     // Format nice title from filename
     const title = formatTitleFromFilename(name);
+    
+    // Determine category from filename
+    let artist = 'Unknown Artist';
+    let album = 'Unknown Album';
+    
+    if (name.toLowerCase().includes('doa')) {
+      artist = 'Daily Prayers';
+      album = 'Islamic Prayers';
+    } else if (name.toLowerCase().includes('dzikir') || name.toLowerCase().includes('tahmid') || name.toLowerCase().includes('istighfar')) {
+      artist = 'Daily Dzikir';
+      album = 'Islamic Recitations';
+    } else if (name.toLowerCase().includes('quran') || name.toLowerCase().includes('ayat') || name.toLowerCase().includes('al-')) {
+      artist = 'Quran Recitation';
+      album = 'Islamic Audio Collection';
+    }
 
     // Prepare record to insert
     const audioRecord = {
       title: title,
-      artist: 'Unknown Artist', // Default values
-      album: 'Unknown Album',   // Default values
+      artist: artist,
+      album: album,
       audiourl: `${supabaseUrl}/storage/v1/object/public/${bucket_id}/${name}`,
-      duration: 0,  // You might want to analyze the file to get actual duration
+      duration: 0,
     };
 
     // Insert the new record into dzikiraudio table
