@@ -26,12 +26,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView }) => {
       active: activeView === 'playlist', 
       onClick: () => onChangeView('playlist') 
     },
-    // { 
-    //   icon: QrCode, 
-    //   label: 'QR Codes',
-    //   active: false,
-    //   onClick: () => navigate('/qrcodes')
-    // }
+    { 
+      icon: QrCode, 
+      label: 'QR Codes',
+      active: false,
+      onClick: () => navigate('/qrcodes')
+    }
   ];
 
   return (
