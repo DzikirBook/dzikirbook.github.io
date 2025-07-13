@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchTrackById } from "@/lib/supabase-client";
@@ -180,7 +179,7 @@ const TrackPage = () => {
           <div className="w-8"></div> {/* Empty div for centering */}
         </div>
 
-        <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 bg-gradient-to-br from-[#F49359] to-[#77B5E1] rounded-xl flex items-center justify-center">
+        <div className="album-art aspect-square w-full max-w-xs mx-auto mb-8 rounded-xl flex items-center justify-center overflow-hidden">
           {track.albumArt ? (
             <img 
               src={track.albumArt} 
@@ -188,7 +187,11 @@ const TrackPage = () => {
               className="w-full h-full object-cover rounded-xl"
             />
           ) : (
-            <BookOpen className="w-24 h-24 text-white" />
+            <img 
+              src="/background-ui-playlist.png" 
+              alt="Default Album Art" 
+              className="w-full h-full object-cover rounded-xl"
+            />
           )}
         </div>
         
