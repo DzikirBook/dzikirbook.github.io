@@ -5,6 +5,7 @@ import {
   formatTitleFromFilename,
   isAudioFile,
 } from "./audio-config";
+import { resolveLegacyStorageKey } from "./legacy-track-map";
 
 async function fetchManifestFiles(): Promise<string[]> {
   const response = await fetch(MANIFEST_URL, { cache: "no-cache" });
@@ -63,5 +64,21 @@ export async function fetchPlaylists(): Promise<Playlist[]> {
 
 export async function fetchTrackById(id: string): Promise<Track | null> {
   const tracks = await fetchDzikirTracks();
-  return tracks.find((track) => track.id === id) ?? null;
+  const normalizedId = id.trim();
+
+  const direct = tracks.find((track) => track.id === normalizedId);
+  if (direct) {
+    return direct;
+  }
+
+  const legacyKey = resolveLegacyStorageKey(normalizedId);
+  if (legacyKey) {
+    const fromManifest = tracks.find((track) => track.id === legacyKey);
+    if (fromManifest) {
+      return fromManifest;
+    }
+    return manifestEntryToTrack(legacyKey);
+  }
+
+  return null;
 }
