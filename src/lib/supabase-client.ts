@@ -1,10 +1,10 @@
 
 import { Track, Playlist } from "./types";
 
-// Cloudflare R2 configuration
+// Cloudflare R2 — public dev URL (no auth required for object access)
 const R2_PUBLIC_URL = "https://pub-adfc2ecb0e5449b1a28b530453c3afc7.r2.dev";
-const R2_S3_API = "https://01db0a5c4608f22ceb8f11fa55504ba3.r2.cloudflarestorage.com";
-const R2_AUDIO_PREFIX = "audio/";
+// Audio manifest served from this site; audio files streamed from R2
+const MANIFEST_URL = "/manifest.json";
 
 // Helper: format a filename into a readable title
 const formatTitleFromFilename = (filename: string): string => {
@@ -15,37 +15,28 @@ const formatTitleFromFilename = (filename: string): string => {
     .join(" ");
 };
 
-// Parse S3 XML ListObjectsV2 response and return object keys
-const parseS3XmlKeys = (xmlText: string): string[] => {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xmlText, "application/xml");
-  const keyNodes = doc.querySelectorAll("Contents > Key");
-  return Array.from(keyNodes).map((node) => node.textContent || "");
-};
-
-// Fetch all dzikir audio tracks from Cloudflare R2 via S3 XML List API
+// Fetch all dzikir audio tracks from the manifest.json hosted on R2
 export const fetchDzikirTracks = async (): Promise<Track[]> => {
   try {
-    // Use S3 ListObjectsV2 XML API (no auth needed for public buckets with list enabled)
-    const listUrl = `${R2_S3_API}/?list-type=2&prefix=${encodeURIComponent(R2_AUDIO_PREFIX)}`;
-    const response = await fetch(listUrl);
+    const response = await fetch(MANIFEST_URL, { cache: "no-cache" });
 
     if (!response.ok) {
-      throw new Error(`R2 list failed: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to fetch manifest: ${response.status} ${response.statusText}`);
     }
 
-    const xml = await response.text();
-    const keys = parseS3XmlKeys(xml);
+    const data: { files: string[] } = await response.json();
+    const files = data.files ?? [];
 
-    // Filter only .mp3 files (exclude folder markers)
-    const audioKeys = keys.filter((key) => key.endsWith(".mp3") || key.endsWith(".m4a") || key.endsWith(".ogg"));
+    const AUDIO_EXT = [".mp3", ".m4a", ".ogg", ".wav"];
+    const audioFiles = files.filter((f) => AUDIO_EXT.some((ext) => f.toLowerCase().endsWith(ext)));
 
-    if (audioKeys.length === 0) {
-      console.warn("No audio files found in R2 bucket at prefix:", R2_AUDIO_PREFIX);
+    if (audioFiles.length === 0) {
+      console.warn("manifest.json is empty or contains no audio files.");
     }
 
-    return audioKeys.map((key) => {
+    return audioFiles.map((key) => {
       const filename = key.split("/").pop() || key;
+      // Encode each path segment to handle spaces & special chars
       const encodedKey = key.split("/").map(encodeURIComponent).join("/");
       const audioUrl = `${R2_PUBLIC_URL}/${encodedKey}`;
 
@@ -60,7 +51,7 @@ export const fetchDzikirTracks = async (): Promise<Track[]> => {
       };
     });
   } catch (error) {
-    console.error("Error fetching tracks from Cloudflare R2:", error);
+    console.error("Error fetching tracks from manifest:", error);
     return [];
   }
 };
