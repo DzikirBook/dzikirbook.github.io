@@ -35,6 +35,7 @@ const TrackPage = () => {
     currentPlaylist: playlist,
     isPlaying: false,
     progress: 0,
+    duration: 0,
     volume: 0.8,
     isShuffle: false,
     isRepeat: false,
@@ -260,7 +261,8 @@ const TrackPage = () => {
                 ...playerState,
                 isPlaying,
                 progress,
-                volume
+                duration,
+                volume,
               }}
               onPlayPause={handlePlayPause}
               onNext={noop}

@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { SkipBack, SkipForward, Play, Pause, Volume2, Shuffle, Repeat, Loader2 } from 'lucide-react';
 import { PlayerState } from '@/lib/types';
+import { formatTime } from '@/lib/format-time';
 
 interface AudioControlsProps {
   playerState: PlayerState;
@@ -39,16 +40,9 @@ const AudioControls: React.FC<AudioControlsProps> = ({
     }
   }, [progress]);
 
-  const formatTime = (seconds: number): string => {
-    if (!seconds || isNaN(seconds) || !isFinite(seconds)) return '0:00';
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
-
-  // Calculate current and total time
-  const currentTime = currentTrack ? formatTime(progress * duration) : '0:00';
-  const totalTime = currentTrack ? formatTime(duration) : '0:00';
+  const elapsedSeconds = progress * duration;
+  const currentTimeLabel = currentTrack ? formatTime(elapsedSeconds) : "0:00";
+  const totalTimeLabel = currentTrack ? formatTime(duration) : "0:00";
 
   const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newProgress = parseFloat(e.target.value);
@@ -75,8 +69,8 @@ const AudioControls: React.FC<AudioControlsProps> = ({
             className="w-full cursor-pointer"
           />
           <div className="flex justify-between text-xs text-player-text mt-1">
-            <span>{currentTime}</span>
-            <span>{totalTime}</span>
+            <span>{currentTimeLabel}</span>
+            <span>{totalTimeLabel}</span>
           </div>
         </div>
       )}

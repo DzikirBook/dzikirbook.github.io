@@ -40,6 +40,13 @@ export function useAudio(
   const wantsPlayRef = useRef(false);
   const hasLoadErrorRef = useRef(false);
 
+  const syncDurationFromAudio = useCallback((audio: HTMLAudioElement) => {
+    const { duration: audioDuration } = audio;
+    if (Number.isFinite(audioDuration) && audioDuration > 0) {
+      setDuration(audioDuration);
+    }
+  }, []);
+
   const applyLoadError = useCallback(
     (audio: HTMLAudioElement, showToast: boolean) => {
       const info = mapMediaElementError(audio.error);
@@ -119,13 +126,16 @@ export function useAudio(
     audio.load();
 
     const onLoadedMetadata = () => {
-      if (audio.duration && Number.isFinite(audio.duration)) {
-        setDuration(audio.duration);
-      }
+      syncDurationFromAudio(audio);
+    };
+
+    const onDurationChange = () => {
+      syncDurationFromAudio(audio);
     };
 
     const onCanPlay = () => {
       setIsLoading(false);
+      syncDurationFromAudio(audio);
       if (wantsPlayRef.current && isPlayingRef.current) {
         attemptPlay(audio, true);
       }
@@ -133,6 +143,7 @@ export function useAudio(
 
     const onLoadedData = () => {
       setIsLoading(false);
+      syncDurationFromAudio(audio);
     };
 
     const onError = () => {
@@ -141,17 +152,19 @@ export function useAudio(
     };
 
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
+    audio.addEventListener("durationchange", onDurationChange);
     audio.addEventListener("canplay", onCanPlay);
     audio.addEventListener("loadeddata", onLoadedData);
     audio.addEventListener("error", onError);
 
     return () => {
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
+      audio.removeEventListener("durationchange", onDurationChange);
       audio.removeEventListener("canplay", onCanPlay);
       audio.removeEventListener("loadeddata", onLoadedData);
       audio.removeEventListener("error", onError);
     };
-  }, [track?.audioUrl, loadAttempts, applyLoadError, attemptPlay]);
+  }, [track?.audioUrl, loadAttempts, applyLoadError, attemptPlay, syncDurationFromAudio]);
 
   useEffect(() => {
     audioRef.current.volume = volume;
@@ -180,8 +193,10 @@ export function useAudio(
     const audio = audioRef.current;
 
     const updateProgress = () => {
-      if (audio.duration) {
-        setProgress(audio.currentTime / audio.duration);
+      syncDurationFromAudio(audio);
+      const { currentTime, duration: audioDuration } = audio;
+      if (Number.isFinite(audioDuration) && audioDuration > 0) {
+        setProgress(currentTime / audioDuration);
       }
     };
 
@@ -198,7 +213,7 @@ export function useAudio(
       audio.removeEventListener("timeupdate", updateProgress);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [onEnded]);
+  }, [onEnded, syncDurationFromAudio]);
 
   useEffect(() => {
     const audio = audioRef.current;
