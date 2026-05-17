@@ -20,6 +20,7 @@ const MusicPlayer: React.FC = () => {
     currentPlaylist: null,
     isPlaying: false,
     progress: 0,
+    duration: 0,
     volume: 0.8,
     isShuffle: false,
     isRepeat: false,
@@ -28,7 +29,8 @@ const MusicPlayer: React.FC = () => {
   // Use the audio hook to handle actual audio playback
   const { 
     isPlaying, 
-    progress, 
+    progress,
+    duration,
     volume,
     hasError,
     errorMessage,
@@ -39,15 +41,15 @@ const MusicPlayer: React.FC = () => {
     retryLoading
   } = useAudio(playerState.currentTrack, handleTrackEnded);
 
-  // Update player state when audio state changes
   useEffect(() => {
     setPlayerState(prev => ({
       ...prev,
       isPlaying,
       progress,
+      duration,
       volume
     }));
-  }, [isPlaying, progress, volume]);
+  }, [isPlaying, progress, duration, volume]);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -128,7 +130,8 @@ const MusicPlayer: React.FC = () => {
     setPlayerState(prev => ({ 
       ...prev, 
       currentTrack: nextTrack,
-      progress: 0 
+      progress: 0,
+      duration: 0
     }));
   };
 
@@ -150,7 +153,8 @@ const MusicPlayer: React.FC = () => {
     setPlayerState(prev => ({ 
       ...prev, 
       currentTrack: prevTrack,
-      progress: 0 
+      progress: 0,
+      duration: 0
     }));
   };
 
@@ -175,7 +179,8 @@ const MusicPlayer: React.FC = () => {
       ...prev, 
       currentTrack: track,
       currentPlaylist: playlist,
-      progress: 0 
+      progress: 0,
+      duration: 0
     }));
     play();
   };

@@ -19,7 +19,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/track/:id" element={<TrackPage />} />
+          <Route path="/track/*" element={<TrackPage />} />
           <Route path="/qrcodes" element={<QRCodesPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -21,6 +21,7 @@ export type PlayerState = {
   currentPlaylist: Playlist | null;
   isPlaying: boolean;
   progress: number;
+  duration: number;
   volume: number;
   isShuffle: boolean;
   isRepeat: boolean;

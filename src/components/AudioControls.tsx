@@ -27,7 +27,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   onToggleRepeat,
   minimal = false,
 }) => {
-  const { isPlaying, progress, volume, isShuffle, isRepeat, currentTrack } = playerState;
+  const { isPlaying, progress, duration, volume, isShuffle, isRepeat, currentTrack } = playerState;
   const progressRef = useRef<HTMLInputElement>(null);
   
   // Update progress bar background
@@ -40,14 +40,15 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   }, [progress]);
 
   const formatTime = (seconds: number): string => {
+    if (!seconds || isNaN(seconds) || !isFinite(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   // Calculate current and total time
-  const currentTime = currentTrack ? formatTime(progress * currentTrack.duration) : '0:00';
-  const totalTime = currentTrack ? formatTime(currentTrack.duration) : '0:00';
+  const currentTime = currentTrack ? formatTime(progress * duration) : '0:00';
+  const totalTime = currentTrack ? formatTime(duration) : '0:00';
 
   const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newProgress = parseFloat(e.target.value);

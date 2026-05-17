@@ -36,6 +36,7 @@ export function useAudio(
   const [audioSource, setAudioSource] = useState<string | null>(null);
   const [loadAttempts, setLoadAttempts] = useState(0);
   const { toast } = useToast();
+  const isPlayingRef = useRef(false);
 
   // Update audio source when track changes or retry is triggered
   useEffect(() => {
@@ -47,6 +48,8 @@ export function useAudio(
       setErrorMessage(null);
       setIsLoading(true);
       setAudioSource(track.audioUrl);
+      setDuration(0);
+      setProgress(0);
 
       // Make sure we're paused before loading a new source
       audio.pause();
@@ -54,17 +57,15 @@ export function useAudio(
       // Log the audio URL we're trying to load
       console.log("Attempting to load audio:", track.audioUrl);
       
-      // Try to load the audio file with proper settings
+      // Try to load the audio file
+      audio.preload = "auto";
       audio.src = track.audioUrl;
-      audio.preload = "auto"; // Preload audio data
-      audio.crossOrigin = "anonymous"; // Important for CORS
       audio.load();
       
       const loadedDataHandler = () => {
         console.log("Audio data loaded successfully");
         setIsLoading(false);
-        setDuration(audio.duration);
-        if (isPlaying) {
+        if (isPlayingRef.current) {
           const playPromise = audio.play();
           if (playPromise !== undefined) {
             playPromise.catch((error) => {
@@ -83,6 +84,14 @@ export function useAudio(
         }
       };
       
+      const loadedMetadataHandler = () => {
+        console.log("Audio metadata loaded, duration:", audio.duration);
+        if (audio.duration && isFinite(audio.duration)) {
+          setDuration(audio.duration);
+        }
+        setIsLoading(false);
+      };
+      
       const canPlayHandler = () => {
         console.log("Audio can play now");
       };
@@ -92,8 +101,9 @@ export function useAudio(
         setIsLoading(false);
         setIsPlaying(false);
         setHasError(true);
+        setDuration(0);
+        setProgress(0);
         
-        // Provide more specific error messages based on the error code
         if (audio.error) {
           switch (audio.error.code) {
             case MediaError.MEDIA_ERR_ABORTED:
@@ -123,11 +133,13 @@ export function useAudio(
       };
       
       audio.addEventListener('loadeddata', loadedDataHandler);
+      audio.addEventListener('loadedmetadata', loadedMetadataHandler);
       audio.addEventListener('canplay', canPlayHandler);
       audio.addEventListener('error', errorHandler);
       
       return () => {
         audio.removeEventListener('loadeddata', loadedDataHandler);
+        audio.removeEventListener('loadedmetadata', loadedMetadataHandler);
         audio.removeEventListener('canplay', canPlayHandler);
         audio.removeEventListener('error', errorHandler);
       };
@@ -136,9 +148,10 @@ export function useAudio(
       audio.pause();
       setIsPlaying(false);
       setProgress(0);
+      setDuration(0);
       setAudioSource(null);
     }
-  }, [track, isPlaying, toast, audioSource, loadAttempts]);
+  }, [track, toast, audioSource, loadAttempts]);
 
   // Update volume
   useEffect(() => {
@@ -149,6 +162,7 @@ export function useAudio(
   // Handle play/pause state
   useEffect(() => {
     const audio = audioRef.current;
+    isPlayingRef.current = isPlaying;
     
     if (isPlaying) {
       const playPromise = audio.play();

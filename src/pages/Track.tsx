@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { fetchTrackById } from "@/lib/supabase-client";
 import { Playlist, Track } from "@/lib/types";
 import { useAudio } from "@/hooks/use-audio";
@@ -9,7 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
 const TrackPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  // Extract everything after /track/ and decode URI components (spaces, etc.)
+  const id = decodeURIComponent(location.pathname.replace(/^\/track\//, ""));
   const navigate = useNavigate();
   const { toast } = useToast();
   const [track, setTrack] = useState<Track | null>(null);
