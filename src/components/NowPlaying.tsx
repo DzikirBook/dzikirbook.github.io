@@ -82,7 +82,7 @@ const NowPlaying: React.FC<NowPlayingProps> = ({
               <p className="font-medium text-red-700">Audio Error</p>
             </div>
             <p className="text-sm text-red-600 mb-3">
-              {errorMessage || "There was a problem playing this audio. The file might be restricted due to CORS policy."}
+              {errorMessage || "There was a problem playing this audio."}
             </p>
             <div className="flex flex-col gap-2">
               {onRetryLoading && (

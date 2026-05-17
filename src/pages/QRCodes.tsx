@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { fetchDzikirTracks } from '@/lib/supabase-client';
+import { fetchDzikirTracks } from '@/lib/track-service';
 import { Track } from '@/lib/types';
 import QRCodeView from '@/components/QRCodeView';
 import { useToast } from '@/hooks/use-toast';

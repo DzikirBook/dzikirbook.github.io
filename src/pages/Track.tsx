@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { fetchTrackById } from "@/lib/supabase-client";
+import { fetchTrackById } from "@/lib/track-service";
 import { Playlist, Track } from "@/lib/types";
 import { useAudio } from "@/hooks/use-audio";
 import AudioControls from "@/components/AudioControls";
-import { BookOpen, AlertTriangle, ExternalLink } from "lucide-react";
+import { ArrowLeft, AlertTriangle, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
@@ -211,7 +211,7 @@ const TrackPage = () => {
               <p className="font-medium text-red-700">Audio Error</p>
             </div>
             <p className="text-sm text-red-600 mb-3">
-              {errorMessage || "There was a problem playing this audio. The file might be restricted due to CORS policy."}
+              {errorMessage || "There was a problem playing this audio."}
             </p>
             <div className="flex flex-col gap-2">
               <Button 
@@ -232,7 +232,7 @@ const TrackPage = () => {
               </Button>
               
               <p className="text-xs text-gray-500 mt-2">
-                The audio file may be restricted by CORS policy. Try accessing from a different browser or device.
+                If this keeps happening, check your connection or try again later.
               </p>
             </div>
           </div>
@@ -276,8 +276,5 @@ const TrackPage = () => {
     </div>
   );
 };
-
-// Add missing import
-import { ArrowLeft } from "lucide-react";
 
 export default TrackPage;

@@ -5,7 +5,7 @@ import NowPlaying from './NowPlaying';
 import PlaylistView from './Playlist';
 import { cn } from '@/lib/utils';
 import { Music, BookOpen } from 'lucide-react';
-import { fetchDzikirTracks, fetchPlaylists } from '@/lib/supabase-client';
+import { fetchDzikirTracks, fetchPlaylists } from '@/lib/track-service';
 import { useToast } from '@/hooks/use-toast';
 import { useAudio } from '@/hooks/use-audio';
 
@@ -57,7 +57,7 @@ const MusicPlayer: React.FC = () => {
       try {
         setIsLoading(true);
         
-        // Fetch tracks and playlists from Supabase
+        // Fetch tracks and playlists from manifest
         const dzikirTracks = await fetchDzikirTracks();
         const dzikirPlaylists = await fetchPlaylists();
         
@@ -262,7 +262,7 @@ const MusicPlayer: React.FC = () => {
             <BookOpen className="w-16 h-16 text-player-gray mb-4" />
             <h2 className="text-xl font-semibold mb-2">No Dzikir Found</h2>
             <p className="text-player-text text-center">
-              Please add dzikir audio to your Supabase database
+              Audio files are not available yet. Run the R2 sync step in CI or locally.
             </p>
           </div>
         ) : (

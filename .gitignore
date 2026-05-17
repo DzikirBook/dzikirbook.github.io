@@ -11,6 +11,12 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+!.env.example
+
+# Synced from R2 (rebuilt in CI); keep manifest in git
+public/audio/
 
 # Editor directories and files
 .vscode/*

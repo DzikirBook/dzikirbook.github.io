@@ -13,23 +13,31 @@
 
 import { S3Client, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
 import { writeFileSync } from "fs";
+import {
+  R2_ACCOUNT_ID,
+  R2_BUCKET_NAME,
+  R2_AUDIO_PREFIX,
+  R2_PUBLIC_URL,
+  getR2Credentials,
+} from "./r2-config.mjs";
+import { loadEnvFiles } from "./load-env.mjs";
 
-// === KONFIGURASI R2 ===
-const ACCOUNT_ID = "01db0a5c4608f22ceb8f11fa55504ba3";
-const BUCKET_NAME = "dzikir-audio";          // nama bucket di R2
-const AUDIO_PREFIX = "audio/";
+loadEnvFiles();
+
 const AUDIO_EXTENSIONS = [".mp3", ".m4a", ".ogg", ".wav"];
+const { accessKeyId, secretAccessKey } = getR2Credentials();
 
-// Isi ACCESS_KEY dan SECRET_KEY dari R2 → Settings → API tokens
-const ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || "GANTI_INI";
-const SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || "GANTI_INI";
+if (!accessKeyId || !secretAccessKey) {
+  console.error("Missing R2_ACCESS_KEY_ID or R2_SECRET_ACCESS_KEY.");
+  process.exit(1);
+}
 
 const client = new S3Client({
   region: "auto",
-  endpoint: `https://${ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
-    accessKeyId: ACCESS_KEY_ID,
-    secretAccessKey: SECRET_ACCESS_KEY,
+    accessKeyId,
+    secretAccessKey,
   },
 });
 
@@ -39,7 +47,7 @@ async function listAllObjects(prefix) {
 
   do {
     const command = new ListObjectsV2Command({
-      Bucket: BUCKET_NAME,
+      Bucket: R2_BUCKET_NAME,
       Prefix: prefix,
       ContinuationToken: continuationToken,
     });
@@ -60,8 +68,8 @@ async function listAllObjects(prefix) {
 }
 
 async function main() {
-  console.log("Listing R2 bucket:", BUCKET_NAME, "prefix:", AUDIO_PREFIX);
-  const files = await listAllObjects(AUDIO_PREFIX);
+  console.log("Listing R2 bucket:", R2_BUCKET_NAME, "prefix:", R2_AUDIO_PREFIX);
+  const files = await listAllObjects(R2_AUDIO_PREFIX);
 
   console.log(`Found ${files.length} audio files:`);
   files.forEach((f) => console.log(" -", f));
@@ -69,15 +77,15 @@ async function main() {
   const manifest = { files };
   const manifestJson = JSON.stringify(manifest, null, 2);
 
-  // Simpan lokal
-  writeFileSync("manifest.json", manifestJson);
-  console.log("\nSaved manifest.json locally.");
+  // Simpan ke public/ agar ikut deploy GitHub Pages
+  writeFileSync("public/manifest.json", manifestJson);
+  console.log("\nSaved public/manifest.json.");
 
   // Upload ke R2 (root bucket, bukan dalam folder)
   console.log("Uploading manifest.json to R2...");
   await client.send(
     new PutObjectCommand({
-      Bucket: BUCKET_NAME,
+      Bucket: R2_BUCKET_NAME,
       Key: "manifest.json",
       Body: manifestJson,
       ContentType: "application/json",
@@ -85,7 +93,7 @@ async function main() {
   );
 
   console.log("Done! manifest.json uploaded to R2.");
-  console.log("Public URL: https://pub-adfc2ecb0e5449b1a28b530453c3afc7.r2.dev/manifest.json");
+  console.log("Public URL:", `${R2_PUBLIC_URL}/manifest.json`);
 }
 
 main().catch((err) => {

@@ -29,6 +29,19 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify R2 secrets
+        run: |
+          if [ -z "${{ secrets.R2_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.R2_SECRET_ACCESS_KEY }}" ]; then
+            echo "::error::Add GitHub Actions secrets: R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY"
+            exit 1
+          fi
+
+      - name: Sync audio from R2
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: npm run sync:audio
       
       - name: Build
         run: npm run build
